@@ -2,46 +2,35 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BAR POS - Monochrome</title>
+    <title>BAR POS - Grouped Quantities</title>
     <style>
-        body { font-family: 'Courier New', Courier, monospace; padding: 15px; background: #000; margin: 0; color: #fff; }
-        .container { max-width: 600px; margin: auto; background: #000; padding: 20px; border: 2px solid #fff; border-radius: 0; }
-        
+        body { font-family: 'Courier New', Courier, monospace; padding: 15px; background: #000; margin: 0; color: #fff; overflow: hidden; }
+        .container { max-width: 600px; margin: auto; background: #000; padding: 20px; border: 2px solid #fff; }
         h2 { text-align: center; border-bottom: 2px solid #fff; padding-bottom: 10px; letter-spacing: 2px; }
-
-        .section-label { font-weight: bold; margin-bottom: 10px; display: block; color: #888; font-size: 0.8rem; text-transform: uppercase; }
-        
         .table-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 25px; }
         .table-btn { padding: 15px 5px; border: 1px solid #fff; background: #000; color: #fff; cursor: pointer; font-weight: bold; }
         .table-btn.selected { background: #fff; color: #000; }
-
         .category-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .cat-box { background: #000; border: 1px solid #fff; padding: 30px 10px; text-align: center; cursor: pointer; font-size: 1.1rem; font-weight: bold; transition: 0.2s; }
+        .cat-box { background: #000; border: 1px solid #fff; padding: 30px 10px; text-align: center; cursor: pointer; font-size: 1.1rem; font-weight: bold; position: relative; }
         .cat-box:active { background: #fff; color: #000; }
-
-        #menuOverlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; z-index: 1000; padding: 20px; box-sizing: border-box;
-        }
+        .has-items::after { content: '●'; position: absolute; top: 5px; right: 10px; font-size: 0.8rem; }
+        #menuOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 1000; padding: 20px; box-sizing: border-box; }
         .overlay-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #fff; padding-bottom: 10px; }
         .back-btn { padding: 10px 20px; background: #fff; color: #000; border: none; font-weight: bold; cursor: pointer; }
-        
         .full-menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .menu-choice-btn { padding: 25px 10px; background: #000; border: 1px solid #fff; color: #fff; font-size: 1rem; cursor: pointer; }
-        .menu-choice-btn:active { background: #fff; color: #000; }
-
-        .order-summary { border: 1px dashed #fff; padding: 15px; margin-bottom: 20px; min-height: 50px; background: #111; }
-        .added-item { border: 1px solid #fff; color: #fff; padding: 4px 10px; margin: 4px; display: inline-block; font-size: 0.8rem; }
-        
+        .menu-choice-btn.punched { background: #fff !important; color: #000 !important; }
+        .order-summary { border: 1px dashed #fff; padding: 15px; margin-bottom: 20px; min-height: 50px; background: #111; max-height: 120px; overflow-y: auto; }
+        .added-item { border: 1px solid #fff; color: #fff; padding: 4px 10px; margin: 4px; display: inline-block; font-size: 0.9rem; font-weight: bold; }
         .footer-btns { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; }
         .send-btn { padding: 20px; background: #fff; color: #000; font-size: 1.2rem; font-weight: bold; border: none; cursor: pointer; }
         .clear-btn { background: #000; color: #fff; border: 1px solid #fff; cursor: pointer; }
+        #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 10px 20px; font-weight: bold; display: none; z-index: 2000; }
     </style>
 </head>
 <body>
     <div class="container">
         <h2>LOVELY ENT BAR</h2>
-        <span class="section-label">Table</span>
         <div class="table-grid">
             <button class="table-btn" onclick="selectTable(this, 'T1')">T1</button>
             <button class="table-btn" onclick="selectTable(this, 'T2')">T2</button>
@@ -52,12 +41,11 @@
             <button class="table-btn" onclick="selectTable(this, 'T7')">T7</button>
             <button class="table-btn" onclick="selectTable(this, 'BAR')">BAR</button>
         </div>
-        <span class="section-label">Category</span>
         <div class="category-grid">
-            <div class="cat-box" onclick="openMenu('Mains')">MAINS</div>
-            <div class="cat-box" onclick="openMenu('Sides')">SIDES</div>
-            <div class="cat-box" onclick="openMenu('Drinks')">DRINKS</div>
-            <div class="cat-box" onclick="openMenu('Dessert')">DESSERT</div>
+            <div id="cat-mains" class="cat-box" onclick="openMenu('Mains')">MAINS</div>
+            <div id="cat-sides" class="cat-box" onclick="openMenu('Sides')">SIDES</div>
+            <div id="cat-drinks" class="cat-box" onclick="openMenu('Drinks')">DRINKS</div>
+            <div id="cat-dessert" class="cat-box" onclick="openMenu('Dessert')">DESSERT</div>
         </div>
         <div class="order-summary"><div id="itemListDisplay"><em>Order Empty</em></div></div>
         <div class="footer-btns">
@@ -66,13 +54,15 @@
         </div>
     </div>
     <div id="menuOverlay">
-        <div class="overlay-header"><h2 id="overlayTitle" style="margin:0;">Category</h2><button class="back-btn" onclick="closeMenu()">BACK</button></div>
+        <div class="overlay-header"><h2 id="overlayTitle" style="margin:0;">CATEGORY</h2><button class="back-btn" onclick="closeMenu()">BACK</button></div>
         <div class="full-menu-grid" id="fullMenuDisplay"></div>
     </div>
+    <div id="toast">ITEM ADDED</div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
     import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
+
     const firebaseConfig = {
         apiKey: "AIzaSyB1BND4Pd7vpd_8LJW1IwZB36-4uFdO6R4",
         authDomain: "pos-lovelyentclub.firebaseapp.com",
@@ -82,43 +72,76 @@
         messagingSenderId: "271664805776",
         appId: "1:271664805776:web:38b2482645209cd7f56515"
     };
+
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     let selectedTable = "";
-    let pendingItems = [];
+    let pendingItems = {}; // Now an object: { 'Beer': 2, 'Coke': 1 }
+    let currentCategory = "";
+
     const menu = {
         'Mains': ['Cheese Burger', 'Chicken Burger', 'Pepperoni Pizza', 'Meat Lovers'],
         'Sides': ['Fries', 'Onion Rings', 'Nuggets', 'Salad'],
         'Drinks': ['Coke', 'Beer', 'Water', 'Iced Coffee'],
         'Dessert': ['Ice Cream', 'Brownie']
     };
+
     window.selectTable = (btn, tableNum) => {
         document.querySelectorAll('.table-btn').forEach(b => b.classList.remove('selected'));
         btn.classList.add('selected');
         selectedTable = tableNum;
     };
+
     window.openMenu = (cat) => {
+        currentCategory = cat;
         document.getElementById('overlayTitle').innerText = cat;
         const display = document.getElementById('fullMenuDisplay');
-        display.innerHTML = menu[cat].map(item => `<button class="menu-choice-btn" onclick="addItem('${item}')">${item}</button>`).join('');
+        display.innerHTML = menu[cat].map(item => `<button class="menu-choice-btn" onclick="addItem(this, '${item}')">${item}</button>`).join('');
         document.getElementById('menuOverlay').style.display = 'block';
     };
+
     window.closeMenu = () => document.getElementById('menuOverlay').style.display = 'none';
-    window.addItem = (item) => {
-        pendingItems.push(item);
+
+    window.addItem = (btn, item) => {
+        pendingItems[item] = (pendingItems[item] || 0) + 1;
+        btn.classList.add('punched');
+        setTimeout(() => btn.classList.remove('punched'), 150);
+        updateSummary();
+        document.getElementById(`cat-${currentCategory.toLowerCase()}`).classList.add('has-items');
+        showToast("ITEM ADDED");
+    };
+
+    function updateSummary() {
         const display = document.getElementById('itemListDisplay');
-        if(pendingItems.length === 1) display.innerHTML = '';
-        display.innerHTML += `<span class="added-item">${item}</span>`;
-    };
+        const keys = Object.keys(pendingItems);
+        if(keys.length === 0) {
+            display.innerHTML = '<em>Order Empty</em>';
+            return;
+        }
+        display.innerHTML = keys.map(name => `<span class="added-item">${pendingItems[name]}x ${name}</span>`).join('');
+    }
+
+    function showToast(text) {
+        const toast = document.getElementById('toast');
+        toast.innerText = text;
+        toast.style.display = 'block';
+        setTimeout(() => toast.style.display = 'none', 600);
+    }
+
     window.clearOrder = () => {
-        pendingItems = []; selectedTable = "";
-        document.getElementById('itemListDisplay').innerHTML = '<em>Order Empty</em>';
+        pendingItems = {}; selectedTable = "";
+        updateSummary();
         document.querySelectorAll('.table-btn').forEach(b => b.classList.remove('selected'));
+        document.querySelectorAll('.cat-box').forEach(b => b.classList.remove('has-items'));
     };
+
     window.submitOrder = () => {
-        if (!selectedTable || pendingItems.length === 0) return alert("Select table and items!");
-        push(ref(db, 'orders'), { table: selectedTable, items: pendingItems, timestamp: Date.now() }).then(() => {
-            alert("Order Sent!"); clearOrder();
+        const itemsArray = Object.keys(pendingItems).map(name => `${pendingItems[name]}x ${name}`);
+        if (!selectedTable || itemsArray.length === 0) return alert("Select table and items!");
+        
+        push(ref(db, 'orders'), { table: selectedTable, items: itemsArray, timestamp: Date.now() }).then(() => {
+            showToast("ORDER SENT");
+            clearOrder();
         });
     };
 </script>
