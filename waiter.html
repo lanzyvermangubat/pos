@@ -1,47 +1,93 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KDS - Station Monitor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Waiter POS - Full Screen Menu</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: white; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; padding: 15px 20px; background: #1e1e1e; }
-        .station-badge { background: #1a73e8; padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; text-transform: uppercase; }
-        .main-layout { display: grid; grid-template-columns: 1fr 300px; flex-grow: 1; overflow: hidden; }
-        .kds-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; padding: 20px; overflow-y: auto; align-content: start; }
-        .order-card { background: #1e1e1e; border-radius: 12px; border-top: 10px solid #4CAF50; display: flex; flex-direction: column; }
-        .order-header { padding: 10px 15px; background: rgba(255,255,255,0.05); display: flex; justify-content: space-between; font-weight: bold; }
-        .order-items { padding: 15px; flex-grow: 1; font-size: 1.2rem; color: #e0e0e0; }
-        .order-item { margin-bottom: 8px; border-bottom: 1px solid #333; padding-bottom: 4px; }
-        .btn-bump { width: 100%; padding: 15px; background: #4CAF50; border: none; color: white; font-weight: bold; cursor: pointer; border-radius: 0 0 12px 12px; }
-        .prep-sidebar { background: #1a1a1a; border-left: 2px solid #333; padding: 20px; overflow-y: auto; }
-        .summary-title { font-size: 1.1rem; font-weight: bold; color: #ff9800; margin-bottom: 15px; border-bottom: 1px solid #444; padding-bottom: 5px; }
-        .prep-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #222; }
-        .prep-count { background: #ff9800; color: black; padding: 2px 8px; border-radius: 10px; font-weight: bold; }
+        body { font-family: 'Segoe UI', sans-serif; padding: 15px; background: #f0f2f5; margin: 0; color: #333; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        
+        h2 { text-align: center; color: #1a73e8; margin-top: 0; }
+
+        .section-label { font-weight: bold; margin-bottom: 10px; display: block; color: #666; font-size: 0.9rem; text-transform: uppercase; }
+        
+        /* Table Map Styles */
+        .table-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 25px; }
+        .table-btn { padding: 15px 5px; border: 2px solid #ddd; background: white; border-radius: 10px; cursor: pointer; font-weight: bold; }
+        .table-btn.selected { background: #1a73e8; color: white; border-color: #1a73e8; }
+
+        /* Category Boxes */
+        .category-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .cat-box { background: #fff; border: 2px solid #1a73e8; padding: 30px 10px; border-radius: 15px; text-align: center; cursor: pointer; font-size: 1.2rem; font-weight: bold; color: #1a73e8; transition: 0.2s; }
+        .cat-box:active { background: #e8f0fe; transform: scale(0.98); }
+
+        /* Full Screen Menu Overlay */
+        #menuOverlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 1000; overflow-y: auto; padding: 20px; box-sizing: border-box;
+        }
+        .overlay-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .back-btn { padding: 10px 20px; background: #5f6368; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        
+        .full-menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .menu-choice-btn { padding: 25px 10px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 12px; font-size: 1.1rem; font-weight: 500; cursor: pointer; }
+        .menu-choice-btn:active { background: #34a853; color: white; }
+
+        /* Summary Footer */
+        .order-summary { background: #fff9c4; padding: 15px; border-radius: 12px; margin-bottom: 20px; min-height: 50px; border: 1px dashed #fbc02d; }
+        .added-item { background: #34a853; color: white; padding: 6px 12px; margin: 4px; border-radius: 15px; display: inline-block; font-size: 0.85rem; }
+        
+        .footer-btns { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; }
+        .send-btn { padding: 20px; background: #34a853; color: white; font-size: 1.2rem; font-weight: bold; border: none; border-radius: 12px; cursor: pointer; }
+        .clear-btn { background: #ea4335; color: white; border: none; border-radius: 12px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<header>
-    <div style="display:flex; align-items:center; gap:15px;">
-        <h1 style="margin:0; font-size: 1.5rem;">KITCHEN MONITOR</h1>
-        <span id="stationName" class="station-badge">Full Kitchen</span>
-    </div>
-    <div id="clock">00:00:00</div>
-</header>
+    <div class="container">
+        <h2>LovelyEnt POS</h2>
+        
+        <span class="section-label">1. Select Table</span>
+        <div class="table-grid">
+            <button class="table-btn" onclick="selectTable(this, 'T1')">T1</button>
+            <button class="table-btn" onclick="selectTable(this, 'T2')">T2</button>
+            <button class="table-btn" onclick="selectTable(this, 'T3')">T3</button>
+            <button class="table-btn" onclick="selectTable(this, 'T4')">T4</button>
+            <button class="table-btn" onclick="selectTable(this, 'T5')">T5</button>
+            <button class="table-btn" onclick="selectTable(this, 'T6')">T6</button>
+            <button class="table-btn" onclick="selectTable(this, 'T7')">T7</button>
+            <button class="table-btn" onclick="selectTable(this, 'Bar')">Bar</button>
+        </div>
 
-<div class="main-layout">
-    <div class="kds-grid" id="orderContainer"></div>
-    <div class="prep-sidebar">
-        <div class="summary-title">STATION PREP</div>
-        <div id="prepSummary"></div>
+        <span class="section-label">2. Select Category</span>
+        <div class="category-grid">
+            <div class="cat-box" onclick="openMenu('Mains')">🍔 MAINS</div>
+            <div class="cat-box" onclick="openMenu('Sides')">🍟 SIDES</div>
+            <div class="cat-box" onclick="openMenu('Drinks')">🥤 DRINKS</div>
+            <div class="cat-box" onclick="openMenu('Dessert')">🍦 DESSERT</div>
+        </div>
+
+        <div class="order-summary">
+            <div id="itemListDisplay"><em>Order is empty...</em></div>
+        </div>
+
+        <div class="footer-btns">
+            <button class="send-btn" onclick="submitOrder()">SEND ORDER</button>
+            <button class="clear-btn" onclick="clearOrder()">RESET</button>
+        </div>
     </div>
-</div>
+
+    <div id="menuOverlay">
+        <div class="overlay-header">
+            <h2 id="overlayTitle" style="margin:0;">Category</h2>
+            <button class="back-btn" onclick="closeMenu()">← BACK</button>
+        </div>
+        <div class="full-menu-grid" id="fullMenuDisplay"></div>
+    </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-    import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
+    import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyB1BND4Pd7vpd_8LJW1IwZB36-4uFdO6R4",
@@ -55,64 +101,66 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+    
+    let selectedTable = "";
+    let pendingItems = [];
 
-    // --- STATION LOGIC ---
-    // URL Usage: index.html?station=Drinks or index.html?station=Mains
-    const params = new URLSearchParams(window.location.search);
-    const currentStation = params.get('station'); // e.g., "Drinks"
-    if (currentStation) document.getElementById('stationName').innerText = currentStation;
-
-    // Define which items belong to which station (Match your menu exactly!)
-    const stationItems = {
-        'Mains': ['Cheese Burger', 'Chicken Burger', 'Pepperoni Pizza', 'Meat Lovers'],
-        'Sides': ['Fries', 'Onion Rings', 'Nuggets', 'Coleslaw'],
-        'Drinks': ['Coke', 'Beer', 'Water', 'Iced Coffee']
+    const menu = {
+        'Mains': ['Cheese Burger', 'Chicken Burger', 'Pepperoni Pizza', 'Meat Lovers', 'Veggie Wrap', 'Steak Sandwich'],
+        'Sides': ['Small Fries', 'Large Fries', 'Onion Rings', 'Nuggets', 'Side Salad', 'Garlic Bread'],
+        'Drinks': ['Coke', 'Beer', 'Water', 'Iced Coffee', 'Apple Juice', 'Lemonade'],
+        'Dessert': ['Ice Cream', 'Choco Brownie', 'Fruit Salad', 'Cheesecake']
     };
 
-    onValue(ref(db, 'orders'), (snapshot) => {
-        const orderContainer = document.getElementById('orderContainer');
-        const prepSummary = document.getElementById('prepSummary');
-        const data = snapshot.val();
+    window.selectTable = (btn, tableNum) => {
+        document.querySelectorAll('.table-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedTable = tableNum;
+    };
+
+    window.openMenu = (cat) => {
+        document.getElementById('overlayTitle').innerText = cat;
+        const display = document.getElementById('fullMenuDisplay');
+        display.innerHTML = menu[cat].map(item => 
+            `<button class="menu-choice-btn" onclick="addItem('${item}')">${item}</button>`
+        ).join('');
+        document.getElementById('menuOverlay').style.display = 'block';
+    };
+
+    window.closeMenu = () => {
+        document.getElementById('menuOverlay').style.display = 'none';
+    };
+
+    window.addItem = (item) => {
+        pendingItems.push(item);
+        const display = document.getElementById('itemListDisplay');
+        if(pendingItems.length === 1) display.innerHTML = '';
+        display.innerHTML += `<span class="added-item">${item}</span>`;
         
-        orderContainer.innerHTML = '';
-        prepSummary.innerHTML = '';
-        if (!data) return;
+        // Optional: Provide visual feedback that item was added
+        console.log("Added: " + item);
+    };
 
-        const totals = {};
+    window.clearOrder = () => {
+        pendingItems = [];
+        selectedTable = "";
+        document.getElementById('itemListDisplay').innerHTML = '<em>Order is empty...</em>';
+        document.querySelectorAll('.table-btn').forEach(b => b.classList.remove('selected'));
+    };
 
-        Object.entries(data).forEach(([id, order]) => {
-            // Filter items based on the station
-            const itemsForThisStation = currentStation 
-                ? order.items.filter(item => stationItems[currentStation].includes(item))
-                : order.items;
-
-            // Only show the card if there's something for this station to do
-            if (itemsForThisStation.length > 0) {
-                const waitTime = Math.floor((Date.now() - order.timestamp) / 60000);
-                const card = document.createElement('div');
-                card.className = 'order-card';
-                card.innerHTML = `
-                    <div class="order-header"><span>${order.table}</span><span>${waitTime}m</span></div>
-                    <div class="order-items">
-                        ${itemsForThisStation.map(i => `<div class="order-item">${i}</div>`).join('')}
-                    </div>
-                    <button class="btn-bump" onclick="window.bumpOrder('${id}')">DONE</button>
-                `;
-                orderContainer.appendChild(card);
-
-                itemsForThisStation.forEach(item => {
-                    totals[item] = (totals[item] || 0) + 1;
-                });
-            }
+    window.submitOrder = () => {
+        if (!selectedTable) return alert("Please select a table first!");
+        if (pendingItems.length === 0) return alert("Please add at least one item!");
+        
+        push(ref(db, 'orders'), {
+            table: selectedTable,
+            items: pendingItems,
+            timestamp: Date.now()
+        }).then(() => {
+            alert(`Order sent for ${selectedTable}!`);
+            clearOrder();
         });
-
-        Object.keys(totals).sort().forEach(name => {
-            prepSummary.innerHTML += `<div class="prep-item"><span>${name}</span><span class="prep-count">${totals[name]}</span></div>`;
-        });
-    });
-
-    window.bumpOrder = (id) => remove(ref(db, `orders/${id}`));
-    setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
+    };
 </script>
 </body>
 </html>
