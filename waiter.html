@@ -3,46 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>STEALTH POS - WAITER</title>
+    <title>POS WAITER - LIGHT MODE</title>
     <style>
-        :root { --bg: #000; --fg: #fff; --gray: #222; }
-        body { font-family: 'Courier New', Courier, monospace; background: var(--bg); color: var(--fg); margin: 0; padding: 15px; user-select: none; }
-        .container { max-width: 600px; margin: auto; border: 2px solid var(--fg); padding: 20px; box-sizing: border-box; }
+        :root { --bg: #ffffff; --fg: #000000; --gray: #f2f2f2; --accent: #000000; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--fg); margin: 0; padding: 15px; user-select: none; }
+        .container { max-width: 600px; margin: auto; border: 1px solid var(--fg); padding: 20px; box-sizing: border-box; background: white; }
         
-        /* Header */
-        header { border-bottom: 2px solid var(--fg); padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-        h2 { margin: 0; letter-spacing: 3px; font-size: 1.2rem; }
+        header { border-bottom: 1px solid var(--fg); padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: baseline; }
+        h2 { margin: 0; letter-spacing: 1px; font-size: 1.4rem; font-weight: 800; }
 
-        /* Grid Systems */
         .grid { display: grid; gap: 10px; margin-bottom: 20px; }
         .table-grid { grid-template-columns: repeat(4, 1fr); }
         .cat-grid { grid-template-columns: repeat(2, 1fr); }
 
-        /* Buttons */
-        button { background: var(--bg); color: var(--fg); border: 1px solid var(--fg); padding: 15px 5px; font-family: inherit; font-weight: bold; cursor: pointer; transition: 0.1s; border-radius: 0; }
+        button { background: var(--bg); color: var(--fg); border: 1px solid var(--fg); padding: 15px 5px; font-family: inherit; font-weight: 600; cursor: pointer; transition: 0.1s; }
         button:active { background: var(--fg); color: var(--bg); }
-        .selected { background: var(--fg); color: var(--bg); box-shadow: 0 0 10px var(--fg); }
+        .selected { background: var(--fg); color: var(--bg); }
 
-        .cat-box { padding: 35px 10px; font-size: 1.1rem; position: relative; }
-        .cat-box::after { content: attr(data-count); position: absolute; top: 5px; right: 10px; font-size: 0.7rem; opacity: 0.5; }
-
-        /* Full Screen Menu Overlay */
-        #menuOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 1000; padding: 20px; box-sizing: border-box; border: 4px solid var(--fg); }
-        .overlay-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--fg); padding-bottom: 15px; margin-bottom: 20px; }
-        .item-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .item-btn { padding: 25px 10px; font-size: 1rem; }
-
-        /* Order Summary */
-        .summary-box { border: 1px solid var(--fg); background: #080808; padding: 15px; min-height: 80px; margin-bottom: 20px; max-height: 150px; overflow-y: auto; position: relative; }
-        .summary-label { position: absolute; top: -10px; left: 10px; background: var(--bg); padding: 0 5px; font-size: 0.7rem; color: #888; }
-        .pill { border: 1px solid var(--fg); display: inline-block; padding: 5px 12px; margin: 4px; font-size: 0.9rem; cursor: pointer; animation: flash 0.2s; }
-        .pill:hover { background: #ff0000; color: #fff; border-color: #ff0000; } /* Red delete hint */
+        .cat-box { padding: 40px 10px; font-size: 1rem; position: relative; border-width: 2px; }
         
-        .footer { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; }
-        .send-btn { background: var(--fg); color: var(--bg); font-size: 1.3rem; padding: 20px; border: none; }
+        #menuOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 1000; padding: 20px; box-sizing: border-box; }
+        .overlay-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--fg); padding-bottom: 15px; margin-bottom: 20px; }
+        .item-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .item-btn { padding: 20px 10px; font-size: 1rem; border-radius: 4px; }
 
-        @keyframes flash { from { background: var(--fg); } to { background: transparent; } }
-        #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--fg); color: var(--bg); padding: 10px 30px; font-weight: bold; z-index: 2001; display: none; border: 2px solid var(--bg); }
+        .summary-box { border: 1px solid var(--fg); background: var(--gray); padding: 15px; min-height: 80px; margin-bottom: 20px; position: relative; }
+        .pill { border: 1px solid var(--fg); background: white; display: inline-block; padding: 6px 12px; margin: 4px; font-size: 0.9rem; font-weight: bold; }
+        
+        .note-input { width: 100%; padding: 12px; border: 1px solid var(--fg); margin-bottom: 15px; font-family: inherit; box-sizing: border-box; display: none; }
+        .btn-note { background: #eee; border-style: dashed; margin-bottom: 15px; width: 100%; padding: 10px; }
+
+        .footer { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; }
+        .send-btn { background: var(--fg); color: var(--bg); font-size: 1.2rem; padding: 20px; font-weight: 800; border: none; }
     </style>
 </head>
 <body>
@@ -50,10 +42,10 @@
     <div class="container">
         <header>
             <h2>LOVELY ENT.</h2>
-            <div id="clock">00:00</div>
+            <div id="clock" style="font-weight:bold;">00:00</div>
         </header>
 
-        <div class="grid table-grid" id="tableGrid">
+        <div class="grid table-grid">
             <button onclick="setTable(this, 'T1')">T1</button>
             <button onclick="setTable(this, 'T2')">T2</button>
             <button onclick="setTable(this, 'T3')">T3</button>
@@ -65,16 +57,18 @@
         </div>
 
         <div class="grid cat-grid">
-            <button class="cat-box" id="cat-Mains" onclick="openMenu('Mains')">MAINS</button>
-            <button class="cat-box" id="cat-Sides" onclick="openMenu('Sides')">SIDES</button>
-            <button class="cat-box" id="cat-Drinks" onclick="openMenu('Drinks')">DRINKS</button>
-            <button class="cat-box" id="cat-Dessert" onclick="openMenu('Dessert')">DESSERT</button>
+            <button class="cat-box" onclick="openMenu('Mains')">MAINS</button>
+            <button class="cat-box" onclick="openMenu('Sides')">SIDES</button>
+            <button class="cat-box" onclick="openMenu('Drinks')">DRINKS</button>
+            <button class="cat-box" onclick="openMenu('Dessert')">DESSERT</button>
         </div>
 
-        <div class="summary-box" id="summary">
-            <span class="summary-label">LIVE ORDER (TAP TO REMOVE)</span>
-            <div id="orderList"><em>EMPTY</em></div>
+        <div class="summary-box">
+            <div id="orderList"><em>EMPTY ORDER</em></div>
         </div>
+
+        <button class="btn-note" id="noteToggle" onclick="toggleNote()">+ ADD KITCHEN NOTE</button>
+        <input type="text" id="orderNote" class="note-input" placeholder="e.g. NO ONIONS / EXTRA ICE">
 
         <div class="footer">
             <button class="send-btn" onclick="submitOrder()">SEND ORDER</button>
@@ -85,12 +79,10 @@
     <div id="menuOverlay">
         <div class="overlay-header">
             <h2 id="overlayTitle">CATEGORY</h2>
-            <button onclick="closeMenu()" style="background:var(--fg); color:var(--bg); border:none; padding:10px 25px;">CLOSE</button>
+            <button onclick="closeMenu()" style="background:var(--fg); color:var(--bg); padding:10px 20px; font-weight:bold;">DONE</button>
         </div>
         <div class="item-grid" id="itemGrid"></div>
     </div>
-
-    <div id="toast">ACTION COMPLETE</div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
@@ -113,10 +105,10 @@
     let orderData = {}; 
 
     const MENU = {
-        'Mains': ['Cheese Burger', 'Chicken Burger', 'Pepperoni Pizza', 'Meat Lovers', 'Club Sandwich'],
-        'Sides': ['Fries', 'Onion Rings', 'Nuggets', 'Garlic Bread'],
-        'Drinks': ['Coke', 'Beer', 'Water', 'Iced Coffee', 'Gin & Tonic', 'Whiskey'],
-        'Dessert': ['Ice Cream', 'Brownie', 'Cheesecake']
+        'Mains': ['Cheese Burger', 'Chicken Burger', 'Pepperoni Pizza', 'Meat Lovers'],
+        'Sides': ['Fries', 'Onion Rings', 'Nuggets', 'Salad'],
+        'Drinks': ['Coke', 'Beer', 'Water', 'Iced Tea'],
+        'Dessert': ['Ice Cream', 'Brownie']
     };
 
     window.setTable = (btn, table) => {
@@ -127,65 +119,51 @@
 
     window.openMenu = (cat) => {
         document.getElementById('overlayTitle').innerText = cat.toUpperCase();
-        const grid = document.getElementById('itemGrid');
-        grid.innerHTML = MENU[cat].map(item => `<button class="item-btn" onclick="addItem('${item}', '${cat}')">${item}</button>`).join('');
+        document.getElementById('itemGrid').innerHTML = MENU[cat].map(item => `<button class="item-btn" onclick="addItem('${item}')">${item}</button>`).join('');
         document.getElementById('menuOverlay').style.display = 'block';
     };
 
     window.closeMenu = () => document.getElementById('menuOverlay').style.display = 'none';
 
-    window.addItem = (item, cat) => {
+    window.addItem = (item) => {
         orderData[item] = (orderData[item] || 0) + 1;
         updateUI();
-        showToast(`+1 ${item}`);
     };
 
-    window.removeItem = (item) => {
-        if (orderData[item] > 1) orderData[item]--;
-        else delete orderData[item];
-        updateUI();
+    window.toggleNote = () => {
+        const input = document.getElementById('orderNote');
+        input.style.display = input.style.display === 'block' ? 'none' : 'block';
     };
 
     function updateUI() {
         const list = document.getElementById('orderList');
         const keys = Object.keys(orderData);
-        if (keys.length === 0) {
-            list.innerHTML = '<em>EMPTY</em>';
-            return;
-        }
-        list.innerHTML = keys.map(k => `<span class="pill" onclick="removeItem('${k}')">${orderData[k]}x ${k}</span>`).join('');
-        
-        // Update Category Counts
-        Object.keys(MENU).forEach(cat => {
-            const count = MENU[cat].reduce((acc, item) => acc + (orderData[item] || 0), 0);
-            document.getElementById(`cat-${cat}`).setAttribute('data-count', count > 0 ? count : '');
-        });
-    }
-
-    function showToast(txt) {
-        const t = document.getElementById('toast');
-        t.innerText = txt; t.style.display = 'block';
-        setTimeout(() => t.style.display = 'none', 700);
+        list.innerHTML = keys.length ? keys.map(k => `<span class="pill">${orderData[k]}x ${k}</span>`).join('') : '<em>EMPTY ORDER</em>';
     }
 
     window.resetOrder = () => {
         orderData = {}; currentTable = "";
+        document.getElementById('orderNote').value = "";
+        document.getElementById('orderNote').style.display = "none";
         updateUI();
         document.querySelectorAll('.table-grid button').forEach(b => b.classList.remove('selected'));
     };
 
     window.submitOrder = () => {
         const items = Object.keys(orderData).map(k => `${orderData[k]}x ${k}`);
-        if (!currentTable || items.length === 0) {
-            showToast("SELECT TABLE & ITEMS");
-            return;
-        }
-        push(ref(db, 'orders'), { table: currentTable, items, timestamp: Date.now() }).then(() => {
-            showToast("ORDER SENT");
+        const note = document.getElementById('orderNote').value;
+        if (!currentTable || items.length === 0) return alert("Select Table & Items");
+        
+        push(ref(db, 'orders'), { 
+            table: currentTable, 
+            items, 
+            note: note || "", 
+            timestamp: Date.now() 
+        }).then(() => {
+            alert("Sent!");
             resetOrder();
         });
     };
-
     setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); }, 1000);
 </script>
 </body>
