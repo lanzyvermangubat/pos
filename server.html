@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server View - Ready for Pickup</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
+        h1 { text-align: center; color: #1a73e8; }
+        .ready-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        .ready-card { background: white; border-radius: 15px; border-left: 10px solid #34a853; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); animation: slideIn 0.3s ease-out; }
+        .table-num { font-size: 2rem; font-weight: bold; color: #333; margin-bottom: 10px; }
+        .items-list { color: #666; font-size: 1.1rem; margin-bottom: 20px; }
+        .btn-delivered { width: 100%; padding: 15px; background: #1a73e8; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 1rem; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .empty-state { text-align: center; color: #999; margin-top: 50px; font-size: 1.2rem; }
+    </style>
+</head>
+<body>
+
+    <h1>🚀 Ready for Pickup</h1>
+    <div id="readyContainer" class="ready-grid"></div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+    import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyB1BND4Pd7vpd_8LJW1IwZB36-4uFdO6R4",
+        authDomain: "pos-lovelyentclub.firebaseapp.com",
+        databaseURL: "https://pos-lovelyentclub-default-rtdb.firebaseio.com",
+        projectId: "pos-lovelyentclub",
+        storageBucket: "pos-lovelyentclub.firebasestorage.app",
+        messagingSenderId: "271664805776",
+        appId: "1:271664805776:web:38b2482645209cd7f56515"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const completedRef = ref(db, 'completedOrders');
+
+    onValue(completedRef, (snapshot) => {
+        const container = document.getElementById('readyContainer');
+        const data = snapshot.val();
+        container.innerHTML = '';
+
+        if (!data) {
+            container.innerHTML = '<div class="empty-state">No orders ready yet. Keep up the hustle!</div>';
+            return;
+        }
+
+        Object.entries(data).forEach(([id, order]) => {
+            const card = document.createElement('div');
+            card.className = 'ready-card';
+            card.innerHTML = `
+                <div class="table-num">${order.table}</div>
+                <div class="items-list">${order.items.join(', ')}</div>
+                <button class="btn-delivered" onclick="window.markDelivered('${id}')">DELIVERED</button>
+            `;
+            container.appendChild(card);
+        });
+    });
+
+    window.markDelivered = (id) => {
+        remove(ref(db, `completedOrders/${id}`));
+    };
+</script>
+</body>
+</html>
