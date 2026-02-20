@@ -2,35 +2,49 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Waiter Input</title>
+    <title>Waiter Input - Categories</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; background: #f4f4f4; margin: 0; }
-        .container { max-width: 500px; margin: auto; }
-        input, select, button { width: 100%; padding: 15px; margin: 10px 0; font-size: 1.1rem; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; }
-        button { background: #2196F3; color: white; font-weight: bold; border: none; cursor: pointer; }
-        .item-list { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #ddd; }
-        .added-item { background: #e3f2fd; padding: 5px 10px; margin: 5px; border-radius: 4px; display: inline-block; font-size: 0.9rem; }
+        body { font-family: 'Segoe UI', sans-serif; padding: 20px; background: #f4f4f4; margin: 0; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        
+        input { width: 100%; padding: 15px; margin-bottom: 20px; font-size: 1.2rem; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; }
+        
+        .category-tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
+        .tab-btn { padding: 10px 20px; border: none; background: #ddd; border-radius: 20px; cursor: pointer; font-weight: bold; white-space: nowrap; }
+        .tab-btn.active { background: #2196F3; color: white; }
+
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .menu-item-btn { padding: 20px; border: 1px solid #eee; background: #fafafa; border-radius: 10px; cursor: pointer; font-size: 1rem; text-align: center; transition: 0.2s; }
+        .menu-item-btn:hover { background: #e3f2fd; border-color: #2196F3; }
+
+        .order-summary { background: #fffde7; padding: 15px; border-radius: 10px; border: 1px dashed #fbc02d; margin-bottom: 20px; }
+        .added-item { background: #2196F3; color: white; padding: 5px 12px; margin: 5px; border-radius: 15px; display: inline-block; font-size: 0.9rem; }
+        
+        .send-btn { width: 100%; padding: 20px; background: #4CAF50; color: white; font-size: 1.3rem; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; }
+        .clear-btn { background: #f44336; margin-top: 10px; }
     </style>
 </head>
 <body>
     <div class="container">
         <h2>New Order</h2>
-        <input type="text" id="tableName" placeholder="Table Number (e.g. T5)">
+        <input type="text" id="tableName" placeholder="Enter Table # (e.g., Table 12)">
         
-        <div class="item-list">
-            <strong>Current Items:</strong>
-            <div id="itemListDisplay">None</div>
+        <div class="category-tabs" id="tabs">
+            <button class="tab-btn active" onclick="showCategory('Mains')">🍔 Mains</button>
+            <button class="tab-btn" onclick="showCategory('Sides')">🍟 Sides</button>
+            <button class="tab-btn" onclick="showCategory('Drinks')">🥤 Drinks</button>
         </div>
 
-        <select id="menuItem">
-            <option value="Burger">🍔 Burger</option>
-            <option value="Fries">🍟 Fries</option>
-            <option value="Pizza">🍕 Pizza</option>
-            <option value="Coke">🥤 Coke</option>
-        </select>
-        
-        <button onclick="addItem()" style="background: #888;">Add Item</button>
-        <button onclick="submitOrder()">SEND TO KITCHEN</button>
+        <div class="menu-grid" id="menuDisplay">
+            </div>
+
+        <div class="order-summary">
+            <strong>Current Order:</strong>
+            <div id="itemListDisplay" style="margin-top:10px;">Empty</div>
+        </div>
+
+        <button class="send-btn" onclick="submitOrder()">SEND TO KITCHEN</button>
+        <button class="send-btn clear-btn" onclick="clearOrder()">Clear All</button>
     </div>
 
 <script type="module">
@@ -50,19 +64,41 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+    
     let pendingItems = [];
+    const menu = {
+        'Mains': ['Cheese Burger', 'Veggie Burger', 'Pepperoni Pizza', 'Caesar Salad'],
+        'Sides': ['French Fries', 'Onion Rings', 'Garlic Bread', 'Mozzarella Sticks'],
+        'Drinks': ['Coke', 'Sprite', 'Iced Tea', 'Orange Juice', 'Water']
+    };
 
-    window.addItem = () => {
-        const item = document.getElementById('menuItem').value;
+    window.showCategory = (cat) => {
+        // Update tab styles
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+
+        // Update menu items
+        const display = document.getElementById('menuDisplay');
+        display.innerHTML = menu[cat].map(item => 
+            `<button class="menu-item-btn" onclick="addItem('${item}')">${item}</button>`
+        ).join('');
+    };
+
+    window.addItem = (item) => {
         pendingItems.push(item);
         const display = document.getElementById('itemListDisplay');
         if(pendingItems.length === 1) display.innerHTML = '';
         display.innerHTML += `<span class="added-item">${item}</span>`;
     };
 
+    window.clearOrder = () => {
+        pendingItems = [];
+        document.getElementById('itemListDisplay').innerHTML = 'Empty';
+    };
+
     window.submitOrder = () => {
         const table = document.getElementById('tableName').value;
-        if (!table || pendingItems.length === 0) return alert("Please add a table name and items!");
+        if (!table || pendingItems.length === 0) return alert("Add table # and items first!");
         
         push(ref(db, 'orders'), {
             table: table,
@@ -70,11 +106,13 @@
             timestamp: Date.now()
         }).then(() => {
             alert("Order Sent!");
-            pendingItems = [];
-            document.getElementById('itemListDisplay').innerHTML = 'None';
+            clearOrder();
             document.getElementById('tableName').value = '';
         });
     };
+
+    // Initialize first category
+    showCategory('Mains');
 </script>
 </body>
 </html>
