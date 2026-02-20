@@ -29,8 +29,9 @@
 <div class="kds-grid" id="orderContainer"></div>
 
 <script type="module">
+    // Added 'push' to the imports so we can move data to the completed folder
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-    import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
+    import { getDatabase, ref, onValue, remove, push } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyB1BND4Pd7vpd_8LJW1IwZB36-4uFdO6R4",
@@ -57,6 +58,7 @@
             const waitTime = Math.floor((Date.now() - order.timestamp) / 60000);
             let urgency = waitTime > 15 ? 'critical' : (waitTime > 8 ? 'warning' : '');
 
+            // We use JSON.stringify(order) to pass the full order data into the bump function
             const card = document.createElement('div');
             card.className = `order-card ${urgency}`;
             card.innerHTML = `
@@ -67,14 +69,26 @@
                 <div class="order-items">
                     ${order.items.map(i => `<div class="order-item">${i}</div>`).join('')}
                 </div>
-                <button class="btn-bump" onclick="window.bumpOrder('${id}')">DONE / BUMP</button>
+                <button class="btn-bump" onclick='window.bumpOrder("${id}", ${JSON.stringify(order)})'>BUMP TO SERVER</button>
             `;
             container.appendChild(card);
         });
     });
 
-    window.bumpOrder = (id) => {
-        remove(ref(db, `orders/${id}`));
+    // Modified Bump function: Moves order to 'completedOrders' before deleting from 'orders'
+    window.bumpOrder = (id, orderData) => {
+        const completedRef = ref(db, 'completedOrders');
+        
+        // 1. Add to completed list
+        push(completedRef, {
+            ...orderData,
+            completedAt: Date.now() // Add a timestamp for when it was finished
+        }).then(() => {
+            // 2. Once saved, remove from active kitchen view
+            remove(ref(db, `orders/${id}`));
+        }).catch((error) => {
+            console.error("Error bumping order: ", error);
+        });
     };
 
     setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
