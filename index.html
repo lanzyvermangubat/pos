@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KDS - Kitchen Display</title>
+    <title>KDS - Kitchen Monitor</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #121212; color: white; margin: 0; padding: 20px; }
         header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
@@ -14,7 +14,6 @@
         .order-item { margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; }
         .btn-bump { width: 100%; padding: 20px; background: #4CAF50; border: none; color: white; font-size: 1.2rem; font-weight: bold; cursor: pointer; border-radius: 0 0 12px 12px; transition: 0.2s; }
         .btn-bump:hover { background: #45a049; }
-        /* Urgency */
         .warning { border-top-color: #ff9800; }
         .critical { border-top-color: #f44336; animation: glow 1.5s infinite; }
         @keyframes glow { 0% { box-shadow: 0 0 5px #f44336; } 50% { box-shadow: 0 0 20px #f44336; } 100% { box-shadow: 0 0 5px #f44336; } }
@@ -33,27 +32,25 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
     import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
 
-    // PASTE YOUR FIREBASE CONFIG HERE
     const firebaseConfig = {
-        apiKey: "YOUR_API_KEY",
-        authDomain: "YOUR_PROJECT.firebaseapp.com",
-        databaseURL: "https://YOUR_PROJECT.firebaseio.com",
-        projectId: "YOUR_PROJECT_ID",
-        storageBucket: "YOUR_PROJECT.appspot.com",
-        messagingSenderId: "YOUR_ID",
-        appId: "YOUR_APP_ID"
+        apiKey: "AIzaSyB1BND4Pd7vpd_8LJW1IwZB36-4uFdO6R4",
+        authDomain: "pos-lovelyentclub.firebaseapp.com",
+        databaseURL: "https://pos-lovelyentclub-default-rtdb.firebaseio.com",
+        projectId: "pos-lovelyentclub",
+        storageBucket: "pos-lovelyentclub.firebasestorage.app",
+        messagingSenderId: "271664805776",
+        appId: "1:271664805776:web:38b2482645209cd7f56515",
+        measurementId: "G-Z70F1BPPE8"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const ordersRef = ref(db, 'orders');
 
-    // Load and Render Orders
     onValue(ordersRef, (snapshot) => {
         const container = document.getElementById('orderContainer');
-        container.innerHTML = '';
         const data = snapshot.val();
-        
+        container.innerHTML = '';
         if (!data) return;
 
         Object.entries(data).forEach(([id, order]) => {
