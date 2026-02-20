@@ -4,40 +4,48 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Waiter Input</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
-        input, select, button { width: 100%; padding: 15px; margin: 10px 0; font-size: 1.1rem; border-radius: 8px; border: 1px solid #ccc; }
+        body { font-family: sans-serif; padding: 20px; background: #f4f4f4; margin: 0; }
+        .container { max-width: 500px; margin: auto; }
+        input, select, button { width: 100%; padding: 15px; margin: 10px 0; font-size: 1.1rem; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; }
         button { background: #2196F3; color: white; font-weight: bold; border: none; cursor: pointer; }
-        .item-list { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; }
+        .item-list { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #ddd; }
+        .added-item { background: #e3f2fd; padding: 5px 10px; margin: 5px; border-radius: 4px; display: inline-block; font-size: 0.9rem; }
     </style>
 </head>
 <body>
-    <h2>New Order</h2>
-    <input type="text" id="tableName" placeholder="Table Number (e.g. T5)">
-    <div class="item-list" id="currentItems">
-        <strong>Items added:</strong> <span id="itemCount">0</span>
+    <div class="container">
+        <h2>New Order</h2>
+        <input type="text" id="tableName" placeholder="Table Number (e.g. T5)">
+        
+        <div class="item-list">
+            <strong>Current Items:</strong>
+            <div id="itemListDisplay">None</div>
+        </div>
+
+        <select id="menuItem">
+            <option value="Burger">🍔 Burger</option>
+            <option value="Fries">🍟 Fries</option>
+            <option value="Pizza">🍕 Pizza</option>
+            <option value="Coke">🥤 Coke</option>
+        </select>
+        
+        <button onclick="addItem()" style="background: #888;">Add Item</button>
+        <button onclick="submitOrder()">SEND TO KITCHEN</button>
     </div>
-    <select id="menuItem">
-        <option value="Burger">Burger</option>
-        <option value="Fries">Fries</option>
-        <option value="Pizza">Pizza</option>
-        <option value="Coke">Coke</option>
-    </select>
-    <button onclick="addItem()" style="background: #888;">Add Item to Order</button>
-    <button onclick="submitOrder()">SEND TO KITCHEN</button>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
     import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
 
-    // PASTE THE SAME FIREBASE CONFIG HERE
     const firebaseConfig = {
-        apiKey: "YOUR_API_KEY",
-        authDomain: "YOUR_PROJECT.firebaseapp.com",
-        databaseURL: "https://YOUR_PROJECT.firebaseio.com",
-        projectId: "YOUR_PROJECT_ID",
-        storageBucket: "YOUR_PROJECT.appspot.com",
-        messagingSenderId: "YOUR_ID",
-        appId: "YOUR_APP_ID"
+        apiKey: "AIzaSyB1BND4Pd7vpd_8LJW1IwZB36-4uFdO6R4",
+        authDomain: "pos-lovelyentclub.firebaseapp.com",
+        databaseURL: "https://pos-lovelyentclub-default-rtdb.firebaseio.com",
+        projectId: "pos-lovelyentclub",
+        storageBucket: "pos-lovelyentclub.firebasestorage.app",
+        messagingSenderId: "271664805776",
+        appId: "1:271664805776:web:38b2482645209cd7f56515",
+        measurementId: "G-Z70F1BPPE8"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -45,25 +53,27 @@
     let pendingItems = [];
 
     window.addItem = () => {
-        pendingItems.push(document.getElementById('menuItem').value);
-        document.getElementById('itemCount').innerText = pendingItems.length;
+        const item = document.getElementById('menuItem').value;
+        pendingItems.push(item);
+        const display = document.getElementById('itemListDisplay');
+        if(pendingItems.length === 1) display.innerHTML = '';
+        display.innerHTML += `<span class="added-item">${item}</span>`;
     };
 
     window.submitOrder = () => {
         const table = document.getElementById('tableName').value;
-        if (!table || pendingItems.length === 0) return alert("Add a table and items!");
+        if (!table || pendingItems.length === 0) return alert("Please add a table name and items!");
         
         push(ref(db, 'orders'), {
             table: table,
             items: pendingItems,
             timestamp: Date.now()
+        }).then(() => {
+            alert("Order Sent!");
+            pendingItems = [];
+            document.getElementById('itemListDisplay').innerHTML = 'None';
+            document.getElementById('tableName').value = '';
         });
-        
-        // Reset
-        pendingItems = [];
-        document.getElementById('itemCount').innerText = "0";
-        document.getElementById('tableName').value = "";
-        alert("Sent to Kitchen!");
     };
 </script>
 </body>
