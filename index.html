@@ -2,102 +2,85 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Kitchen Monitor POS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KDS - Kitchen Display</title>
     <style>
-        body { font-family: sans-serif; background: #1a1a1a; color: white; margin: 0; padding: 20px; }
-        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; padding-bottom: 10px; }
-        
-        .kds-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
-            gap: 20px; 
-            margin-top: 20px; 
-        }
-
-        .order-card { 
-            background: #2d2d2d; 
-            border-radius: 8px; 
-            display: flex; 
-            flex-direction: column;
-            border-top: 8px solid #4CAF50;
-        }
-
-        .order-header { padding: 10px; background: rgba(255,255,255,0.05); display: flex; justify-content: space-between; }
-        .order-items { padding: 15px; flex-grow: 1; font-size: 1.2rem; }
-        .order-item { margin-bottom: 8px; border-bottom: 1px solid #444; padding-bottom: 4px; }
-        
-        .order-footer { padding: 10px; }
-        .btn-complete { 
-            width: 100%; padding: 12px; background: #4CAF50; border: none; 
-            color: white; font-weight: bold; cursor: pointer; border-radius: 4px;
-        }
-
-        /* Urgency Colors */
-        .warning { border-top-color: #ff9800 !important; }
-        .critical { border-top-color: #f44336 !important; animation: pulse 2s infinite; }
-        
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0px rgba(244, 67, 54, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(244, 67, 54, 0); }
-            100% { box-shadow: 0 0 0 0px rgba(244, 67, 54, 0); }
-        }
+        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: white; margin: 0; padding: 20px; }
+        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
+        .kds-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .order-card { background: #1e1e1e; border-radius: 12px; border-top: 10px solid #4CAF50; display: flex; flex-direction: column; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .order-header { padding: 15px; background: rgba(255,255,255,0.05); display: flex; justify-content: space-between; font-weight: bold; font-size: 1.2rem; }
+        .order-items { padding: 20px; flex-grow: 1; font-size: 1.4rem; color: #e0e0e0; }
+        .order-item { margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        .btn-bump { width: 100%; padding: 20px; background: #4CAF50; border: none; color: white; font-size: 1.2rem; font-weight: bold; cursor: pointer; border-radius: 0 0 12px 12px; transition: 0.2s; }
+        .btn-bump:hover { background: #45a049; }
+        /* Urgency */
+        .warning { border-top-color: #ff9800; }
+        .critical { border-top-color: #f44336; animation: glow 1.5s infinite; }
+        @keyframes glow { 0% { box-shadow: 0 0 5px #f44336; } 50% { box-shadow: 0 0 20px #f44336; } 100% { box-shadow: 0 0 5px #f44336; } }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>KITCHEN DISPLAY SYSTEM</h1>
+    <h1 style="margin:0;">KITCHEN MONITOR</h1>
     <div id="clock">00:00:00</div>
 </header>
 
-<div class="kds-grid" id="orderContainer">
-    </div>
+<div class="kds-grid" id="orderContainer"></div>
 
-<script>
-    // Sample Data
-    const orders = [
-        { id: 101, table: "T4", items: ["2x Cheese Burger", "1x Large Fries"], minutes: 2 },
-        { id: 102, table: "T12", items: ["1x Margherita Pizza", "2x Coke"], minutes: 8 },
-        { id: 103, table: "Pickup", items: ["1x Caesar Salad"], minutes: 12 }
-    ];
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+    import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
 
-    function renderOrders() {
+    // PASTE YOUR FIREBASE CONFIG HERE
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_PROJECT.firebaseapp.com",
+        databaseURL: "https://YOUR_PROJECT.firebaseio.com",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_PROJECT.appspot.com",
+        messagingSenderId: "YOUR_ID",
+        appId: "YOUR_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const ordersRef = ref(db, 'orders');
+
+    // Load and Render Orders
+    onValue(ordersRef, (snapshot) => {
         const container = document.getElementById('orderContainer');
         container.innerHTML = '';
+        const data = snapshot.val();
+        
+        if (!data) return;
 
-        orders.forEach(order => {
-            const urgencyClass = order.minutes >= 10 ? 'critical' : (order.minutes >= 5 ? 'warning' : '');
-            
+        Object.entries(data).forEach(([id, order]) => {
+            const waitTime = Math.floor((Date.now() - order.timestamp) / 60000);
+            let urgency = waitTime > 15 ? 'critical' : (waitTime > 8 ? 'warning' : '');
+
             const card = document.createElement('div');
-            card.className = `order-card ${urgencyClass}`;
+            card.className = `order-card ${urgency}`;
             card.innerHTML = `
                 <div class="order-header">
-                    <span>#${order.id} - <strong>${order.table}</strong></span>
-                    <span>${order.minutes}m</span>
+                    <span>Table: ${order.table}</span>
+                    <span>${waitTime}m</span>
                 </div>
                 <div class="order-items">
-                    ${order.items.map(item => `<div class="order-item">${item}</div>`).join('')}
+                    ${order.items.map(i => `<div class="order-item">${i}</div>`).join('')}
                 </div>
-                <div class="order-footer">
-                    <button class="btn-complete" onclick="removeOrder(${order.id})">BUMP ORDER</button>
-                </div>
+                <button class="btn-bump" onclick="window.bumpOrder('${id}')">DONE / BUMP</button>
             `;
             container.appendChild(card);
         });
-    }
+    });
 
-    function removeOrder(id) {
-        const idx = orders.findIndex(o => o.id === id);
-        if (idx > -1) orders.splice(idx, 1);
-        renderOrders();
-    }
+    window.bumpOrder = (id) => {
+        remove(ref(db, `orders/${id}`));
+    };
 
-    // Update clock
-    setInterval(() => {
-        document.getElementById('clock').innerText = new Date().toLocaleTimeString();
-    }, 1000);
-
-    renderOrders();
+    setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
 </script>
 </body>
 </html>
