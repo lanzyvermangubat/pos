@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waiter Input</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
+        input, select, button { width: 100%; padding: 15px; margin: 10px 0; font-size: 1.1rem; border-radius: 8px; border: 1px solid #ccc; }
+        button { background: #2196F3; color: white; font-weight: bold; border: none; cursor: pointer; }
+        .item-list { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <h2>New Order</h2>
+    <input type="text" id="tableName" placeholder="Table Number (e.g. T5)">
+    <div class="item-list" id="currentItems">
+        <strong>Items added:</strong> <span id="itemCount">0</span>
+    </div>
+    <select id="menuItem">
+        <option value="Burger">Burger</option>
+        <option value="Fries">Fries</option>
+        <option value="Pizza">Pizza</option>
+        <option value="Coke">Coke</option>
+    </select>
+    <button onclick="addItem()" style="background: #888;">Add Item to Order</button>
+    <button onclick="submitOrder()">SEND TO KITCHEN</button>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+    import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
+
+    // PASTE THE SAME FIREBASE CONFIG HERE
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_PROJECT.firebaseapp.com",
+        databaseURL: "https://YOUR_PROJECT.firebaseio.com",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_PROJECT.appspot.com",
+        messagingSenderId: "YOUR_ID",
+        appId: "YOUR_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    let pendingItems = [];
+
+    window.addItem = () => {
+        pendingItems.push(document.getElementById('menuItem').value);
+        document.getElementById('itemCount').innerText = pendingItems.length;
+    };
+
+    window.submitOrder = () => {
+        const table = document.getElementById('tableName').value;
+        if (!table || pendingItems.length === 0) return alert("Add a table and items!");
+        
+        push(ref(db, 'orders'), {
+            table: table,
+            items: pendingItems,
+            timestamp: Date.now()
+        });
+        
+        // Reset
+        pendingItems = [];
+        document.getElementById('itemCount').innerText = "0";
+        document.getElementById('tableName').value = "";
+        alert("Sent to Kitchen!");
+    };
+</script>
+</body>
+</html>
