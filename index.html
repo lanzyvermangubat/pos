@@ -3,33 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KDS - Kitchen Monitor</title>
+    <title>STEALTH KDS - MONITOR</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: white; margin: 0; padding: 20px; }
-        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
-        .kds-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-        .order-card { background: #1e1e1e; border-radius: 12px; border-top: 10px solid #4CAF50; display: flex; flex-direction: column; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        .order-header { padding: 15px; background: rgba(255,255,255,0.05); display: flex; justify-content: space-between; font-weight: bold; font-size: 1.2rem; }
-        .order-items { padding: 20px; flex-grow: 1; font-size: 1.4rem; color: #e0e0e0; }
-        .order-item { margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; }
-        .btn-bump { width: 100%; padding: 20px; background: #4CAF50; border: none; color: white; font-size: 1.2rem; font-weight: bold; cursor: pointer; border-radius: 0 0 12px 12px; transition: 0.2s; }
-        .btn-bump:hover { background: #45a049; }
-        .warning { border-top-color: #ff9800; }
-        .critical { border-top-color: #f44336; animation: glow 1.5s infinite; }
-        @keyframes glow { 0% { box-shadow: 0 0 5px #f44336; } 50% { box-shadow: 0 0 20px #f44336; } 100% { box-shadow: 0 0 5px #f44336; } }
+        :root { --bg: #000; --fg: #fff; }
+        body { font-family: 'Courier New', monospace; background: var(--bg); color: var(--fg); margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        header { border-bottom: 2px solid var(--fg); padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; background: #080808; }
+        
+        .layout { display: grid; grid-template-columns: 1fr 320px; flex: 1; overflow: hidden; }
+        
+        .kds-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; padding: 20px; overflow-y: auto; align-content: start; }
+        .card { border: 1px solid var(--fg); background: var(--bg); display: flex; flex-direction: column; }
+        .card-head { background: var(--fg); color: var(--bg); padding: 10px; font-weight: bold; display: flex; justify-content: space-between; }
+        .card-body { padding: 15px; flex-grow: 1; font-size: 1.3rem; }
+        .card-foot { border-top: 1px solid var(--fg); padding: 15px; text-align: center; cursor: pointer; font-weight: bold; font-size: 1.1rem; }
+        .card-foot:active { background: var(--fg); color: var(--bg); }
+
+        .sidebar { border-left: 2px solid var(--fg); background: #080808; padding: 20px; overflow-y: auto; }
+        .sidebar-title { border-bottom: 2px solid var(--fg); padding-bottom: 10px; margin-bottom: 20px; font-weight: bold; }
+        .summary-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 1.1rem; }
+        .count-badge { background: var(--fg); color: var(--bg); padding: 0 10px; font-weight: bold; }
+
+        .critical { animation: pulse 1s infinite alternate; }
+        @keyframes pulse { from { border-color: #fff; box-shadow: 0 0 0px #fff; } to { border-color: #ff0000; box-shadow: 0 0 10px #ff0000; } }
     </style>
 </head>
 <body>
 
-<header>
-    <h1 style="margin:0;">KITCHEN MONITOR</h1>
-    <div id="clock">00:00:00</div>
-</header>
+    <header>
+        <h1 style="margin:0; font-size:1.5rem; letter-spacing:4px;">KDS MONITOR</h1>
+        <div id="clock">00:00:00</div>
+    </header>
 
-<div class="kds-grid" id="orderContainer"></div>
+    <div class="layout">
+        <div class="kds-grid" id="kdsGrid"></div>
+        <div class="sidebar">
+            <div class="sidebar-title">PRODUCTION TOTALS</div>
+            <div id="prepTotals"></div>
+        </div>
+    </div>
 
 <script type="module">
-    // Added 'push' to the imports so we can move data to the completed folder
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
     import { getDatabase, ref, onValue, remove, push } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
 
@@ -40,55 +53,50 @@
         projectId: "pos-lovelyentclub",
         storageBucket: "pos-lovelyentclub.firebasestorage.app",
         messagingSenderId: "271664805776",
-        appId: "1:271664805776:web:38b2482645209cd7f56515",
-        measurementId: "G-Z70F1BPPE8"
+        appId: "1:271664805776:web:38b2482645209cd7f56515"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const ordersRef = ref(db, 'orders');
 
-    onValue(ordersRef, (snapshot) => {
-        const container = document.getElementById('orderContainer');
+    onValue(ref(db, 'orders'), (snapshot) => {
+        const grid = document.getElementById('kdsGrid');
+        const prep = document.getElementById('prepTotals');
         const data = snapshot.val();
-        container.innerHTML = '';
+        
+        grid.innerHTML = ''; prep.innerHTML = '';
         if (!data) return;
 
-        Object.entries(data).forEach(([id, order]) => {
-            const waitTime = Math.floor((Date.now() - order.timestamp) / 60000);
-            let urgency = waitTime > 15 ? 'critical' : (waitTime > 8 ? 'warning' : '');
+        const totals = {};
 
-            // We use JSON.stringify(order) to pass the full order data into the bump function
+        Object.entries(data).forEach(([id, order]) => {
+            const age = Math.floor((Date.now() - order.timestamp) / 60000);
+            
             const card = document.createElement('div');
-            card.className = `order-card ${urgency}`;
+            card.className = `card ${age > 12 ? 'critical' : ''}`;
             card.innerHTML = `
-                <div class="order-header">
-                    <span>Table: ${order.table}</span>
-                    <span>${waitTime}m</span>
-                </div>
-                <div class="order-items">
-                    ${order.items.map(i => `<div class="order-item">${i}</div>`).join('')}
-                </div>
-                <button class="btn-bump" onclick='window.bumpOrder("${id}", ${JSON.stringify(order)})'>BUMP TO SERVER</button>
+                <div class="card-head"><span>${order.table}</span><span>${age}m</span></div>
+                <div class="card-body">${order.items.map(i => `<div style="margin-bottom:5px;">${i}</div>`).join('')}</div>
+                <div class="card-foot" onclick='window.bump("${id}", ${JSON.stringify(order)})'>BUMP TO SERVER</div>
             `;
-            container.appendChild(card);
+            grid.appendChild(card);
+
+            order.items.forEach(i => {
+                const parts = i.split('x ');
+                const qty = parseInt(parts[0]);
+                const name = parts[1];
+                totals[name] = (totals[name] || 0) + qty;
+            });
+        });
+
+        Object.keys(totals).sort().forEach(item => {
+            prep.innerHTML += `<div class="summary-row"><span>${item}</span><span class="count-badge">${totals[item]}</span></div>`;
         });
     });
 
-    // Modified Bump function: Moves order to 'completedOrders' before deleting from 'orders'
-    window.bumpOrder = (id, orderData) => {
-        const completedRef = ref(db, 'completedOrders');
-        
-        // 1. Add to completed list
-        push(completedRef, {
-            ...orderData,
-            completedAt: Date.now() // Add a timestamp for when it was finished
-        }).then(() => {
-            // 2. Once saved, remove from active kitchen view
-            remove(ref(db, `orders/${id}`));
-        }).catch((error) => {
-            console.error("Error bumping order: ", error);
-        });
+    window.bump = (id, order) => {
+        push(ref(db, 'completedOrders'), {...order, completedAt: Date.now()})
+        .then(() => remove(ref(db, `orders/${id}`)));
     };
 
     setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
