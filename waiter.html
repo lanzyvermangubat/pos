@@ -2,55 +2,77 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Waiter Input - Categories</title>
+    <title>Waiter POS - Table Map</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; padding: 20px; background: #f4f4f4; margin: 0; }
-        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        body { font-family: 'Segoe UI', sans-serif; padding: 15px; background: #f0f2f5; margin: 0; color: #333; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         
-        input { width: 100%; padding: 15px; margin-bottom: 20px; font-size: 1.2rem; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; }
-        
-        .category-tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
-        .tab-btn { padding: 10px 20px; border: none; background: #ddd; border-radius: 20px; cursor: pointer; font-weight: bold; white-space: nowrap; }
-        .tab-btn.active { background: #2196F3; color: white; }
+        h2 { text-align: center; color: #1a73e8; margin-top: 0; }
+
+        /* Table Map Styles */
+        .section-label { font-weight: bold; margin-bottom: 10px; display: block; color: #666; font-size: 0.9rem; text-transform: uppercase; }
+        .table-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 25px; }
+        .table-btn { padding: 15px 5px; border: 2px solid #ddd; background: white; border-radius: 10px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .table-btn.selected { background: #1a73e8; color: white; border-color: #1a73e8; transform: scale(1.05); }
+
+        /* Category & Menu Styles */
+        .category-tabs { display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; }
+        .tab-btn { padding: 10px 18px; border: none; background: #e4e6eb; border-radius: 20px; cursor: pointer; font-weight: bold; white-space: nowrap; }
+        .tab-btn.active { background: #1a73e8; color: white; }
 
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .menu-item-btn { padding: 20px; border: 1px solid #eee; background: #fafafa; border-radius: 10px; cursor: pointer; font-size: 1rem; text-align: center; transition: 0.2s; }
-        .menu-item-btn:hover { background: #e3f2fd; border-color: #2196F3; }
+        .menu-item-btn { padding: 18px; border: 1px solid #eee; background: #f8f9fa; border-radius: 12px; cursor: pointer; font-size: 1rem; font-weight: 500; }
+        .menu-item-btn:active { background: #e8f0fe; }
 
-        .order-summary { background: #fffde7; padding: 15px; border-radius: 10px; border: 1px dashed #fbc02d; margin-bottom: 20px; }
-        .added-item { background: #2196F3; color: white; padding: 5px 12px; margin: 5px; border-radius: 15px; display: inline-block; font-size: 0.9rem; }
+        /* Summary */
+        .order-summary { background: #fff9c4; padding: 15px; border-radius: 12px; margin-bottom: 20px; min-height: 50px; }
+        .added-item { background: #34a853; color: white; padding: 6px 12px; margin: 4px; border-radius: 15px; display: inline-block; font-size: 0.85rem; }
         
-        .send-btn { width: 100%; padding: 20px; background: #4CAF50; color: white; font-size: 1.3rem; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; }
-        .clear-btn { background: #f44336; margin-top: 10px; }
+        .footer-btns { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; }
+        .send-btn { padding: 20px; background: #34a853; color: white; font-size: 1.2rem; font-weight: bold; border: none; border-radius: 12px; cursor: pointer; }
+        .clear-btn { background: #ea4335; color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>New Order</h2>
-        <input type="text" id="tableName" placeholder="Enter Table # (e.g., Table 12)">
+        <h2>LovelyEnt POS</h2>
         
+        <span class="section-label">1. Select Table</span>
+        <div class="table-grid" id="tableMap">
+            <button class="table-btn" onclick="selectTable(this, 'T1')">T1</button>
+            <button class="table-btn" onclick="selectTable(this, 'T2')">T2</button>
+            <button class="table-btn" onclick="selectTable(this, 'T3')">T3</button>
+            <button class="table-btn" onclick="selectTable(this, 'T4')">T4</button>
+            <button class="table-btn" onclick="selectTable(this, 'T5')">T5</button>
+            <button class="table-btn" onclick="selectTable(this, 'T6')">T6</button>
+            <button class="table-btn" onclick="selectTable(this, 'T7')">T7</button>
+            <button class="table-btn" onclick="selectTable(this, 'Bar')">Bar</button>
+        </div>
+
+        <span class="section-label">2. Select Items</span>
         <div class="category-tabs" id="tabs">
             <button class="tab-btn active" onclick="showCategory('Mains')">🍔 Mains</button>
             <button class="tab-btn" onclick="showCategory('Sides')">🍟 Sides</button>
             <button class="tab-btn" onclick="showCategory('Drinks')">🥤 Drinks</button>
         </div>
 
-        <div class="menu-grid" id="menuDisplay">
-            </div>
+        <div class="menu-grid" id="menuDisplay"></div>
 
         <div class="order-summary">
-            <strong>Current Order:</strong>
-            <div id="itemListDisplay" style="margin-top:10px;">Empty</div>
+            <div id="itemListDisplay"><em>No items added...</em></div>
         </div>
 
-        <button class="send-btn" onclick="submitOrder()">SEND TO KITCHEN</button>
-        <button class="send-btn clear-btn" onclick="clearOrder()">Clear All</button>
+        <div class="footer-btns">
+            <button class="send-btn" onclick="submitOrder()">SEND ORDER</button>
+            <button class="clear-btn" onclick="clearOrder()">RESET</button>
+        </div>
     </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
     import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
 
+    // YOUR CONFIG
     const firebaseConfig = {
         apiKey: "AIzaSyB1BND4Pd7vpd_8LJW1IwZB36-4uFdO6R4",
         authDomain: "pos-lovelyentclub.firebaseapp.com",
@@ -58,26 +80,31 @@
         projectId: "pos-lovelyentclub",
         storageBucket: "pos-lovelyentclub.firebasestorage.app",
         messagingSenderId: "271664805776",
-        appId: "1:271664805776:web:38b2482645209cd7f56515",
-        measurementId: "G-Z70F1BPPE8"
+        appId: "1:271664805776:web:38b2482645209cd7f56515"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     
+    let selectedTable = "";
     let pendingItems = [];
+
+    // EDIT YOUR MENU ITEMS HERE
     const menu = {
-        'Mains': ['Cheese Burger', 'Veggie Burger', 'Pepperoni Pizza', 'Caesar Salad'],
-        'Sides': ['French Fries', 'Onion Rings', 'Garlic Bread', 'Mozzarella Sticks'],
-        'Drinks': ['Coke', 'Sprite', 'Iced Tea', 'Orange Juice', 'Water']
+        'Mains': ['Cheese Burger', 'Chicken Burger', 'Pepperoni Pizza', 'Meat Lovers'],
+        'Sides': ['Fries', 'Onion Rings', 'Nuggets', 'Coleslaw'],
+        'Drinks': ['Coke', 'Beer', 'Water', 'Iced Coffee']
+    };
+
+    window.selectTable = (btn, tableNum) => {
+        document.querySelectorAll('.table-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedTable = tableNum;
     };
 
     window.showCategory = (cat) => {
-        // Update tab styles
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         event.target.classList.add('active');
-
-        // Update menu items
         const display = document.getElementById('menuDisplay');
         display.innerHTML = menu[cat].map(item => 
             `<button class="menu-item-btn" onclick="addItem('${item}')">${item}</button>`
@@ -93,25 +120,25 @@
 
     window.clearOrder = () => {
         pendingItems = [];
-        document.getElementById('itemListDisplay').innerHTML = 'Empty';
+        selectedTable = "";
+        document.getElementById('itemListDisplay').innerHTML = '<em>No items added...</em>';
+        document.querySelectorAll('.table-btn').forEach(b => b.classList.remove('selected'));
     };
 
     window.submitOrder = () => {
-        const table = document.getElementById('tableName').value;
-        if (!table || pendingItems.length === 0) return alert("Add table # and items first!");
+        if (!selectedTable) return alert("Please select a table first!");
+        if (pendingItems.length === 0) return alert("Please add at least one item!");
         
         push(ref(db, 'orders'), {
-            table: table,
+            table: selectedTable,
             items: pendingItems,
             timestamp: Date.now()
         }).then(() => {
-            alert("Order Sent!");
+            alert(`Order sent for ${selectedTable}!`);
             clearOrder();
-            document.getElementById('tableName').value = '';
         });
     };
 
-    // Initialize first category
     showCategory('Mains');
 </script>
 </body>
