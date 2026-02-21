@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FAST FOOD KDS - PRO MONITOR</title>
+    <title>KDS MONITOR</title>
     <style>
         :root { --bg: #000; --fg: #fff; --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         body { font-family: var(--font); background: var(--bg); color: var(--fg); margin: 0; padding: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
@@ -22,123 +22,44 @@
     </style>
 </head>
 <body>
-    <header>
-        <div>ACTIVE: <span id="orderCount">0</span></div>
-        <button class="recall-btn" id="recallBtn" onclick="window.recallLastOrder()" style="display:none;">↺ RECALL</button>
-        <div id="clock">00:00:00</div>
-    </header>
+    <header><div>ACTIVE: <span id="orderCount">0</span></div><button class="recall-btn" id="recallBtn" onclick="window.recallLastOrder()" style="display:none;">↺ RECALL</button><div id="clock">00:00:00</div></header>
     <div class="kds-scroll-area" id="kdsGrid"></div>
     <div class="summary-bar" id="summaryBar"><span style="color:#888; font-size:0.8rem;">TOTAL PREP:</span></div>
-
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-    import { getDatabase, ref, onValue, remove, push, set, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
-    
-    const firebaseConfig = { 
-        apiKey: "AIzaSyB1BND4Pd7vpd_8LJW1IwZB36-4uFdO6R4", 
-        authDomain: "pos-lovelyentclub.firebaseapp.com", 
-        databaseURL: "https://pos-lovelyentclub-default-rtdb.firebaseio.com", 
-        projectId: "pos-lovelyentclub", 
-        storageBucket: "pos-lovelyentclub.firebasestorage.app", 
-        messagingSenderId: "271664805776", 
-        appId: "1:271664805776:web:38b2482645209cd7f56515" 
-    };
-
-    const app = initializeApp(firebaseConfig); 
-    const db = getDatabase(app); 
-    let lastOrderRecallData = null;
-
+    import { getDatabase, ref, onValue, remove, push, set } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
+    const firebaseConfig = { apiKey: "AIzaSyB1BND4Pd7vpd_8LJW1IwZB36-4uFdO6R4", authDomain: "pos-lovelyentclub.firebaseapp.com", databaseURL: "https://pos-lovelyentclub-default-rtdb.firebaseio.com", projectId: "pos-lovelyentclub", storageBucket: "pos-lovelyentclub.firebasestorage.app", messagingSenderId: "271664805776", appId: "1:271664805776:web:38b2482645209cd7f56515" };
+    const app = initializeApp(firebaseConfig); const db = getDatabase(app); let lastRecall = null;
     function tick() {
-        const now = Date.now(); 
-        const slots = document.querySelectorAll('.slot'); 
-        const totals = {};
-        slots.forEach(slot => {
-            const timestamp = parseInt(slot.getAttribute('data-time')); 
-            const timerEl = slot.querySelector('.timer-display');
-            const elapsed = Math.floor((now - timestamp) / 1000); 
-            const mins = Math.floor(elapsed / 60); 
-            const secs = (elapsed % 60).toString().padStart(2, '0');
+        const now = Date.now(); const totals = {};
+        document.querySelectorAll('.slot').forEach(slot => {
+            const timestamp = parseInt(slot.getAttribute('data-time')); const timerEl = slot.querySelector('.timer-display');
+            const elapsed = Math.floor((now - timestamp) / 1000); const mins = Math.floor(elapsed / 60); const secs = (elapsed % 60).toString().padStart(2, '0');
             timerEl.innerText = `${mins}:${secs}`;
             if (mins >= 3) slot.classList.add('urgent'); else slot.classList.remove('urgent');
             const items = JSON.parse(slot.getAttribute('data-items'));
-            items.forEach(i => { 
-                const qty = parseInt(i.split('x ')[0]) || 1; 
-                const name = i.split('x ')[1] || i; 
-                totals[name] = (totals[name] || 0) + qty; 
-            });
+            items.forEach(i => { const q = parseInt(i.split('x ')[0]) || 1; const n = i.split('x ')[1] || i; totals[n] = (totals[n] || 0) + q; });
         });
-        const summaryContent = Object.keys(totals).map(name => `<span class="summary-item">${totals[name]} ${name}</span>`).join('');
-        document.getElementById('summaryBar').innerHTML = `<span style="color:#888; font-size:0.8rem;">TOTAL PREP:</span> ` + summaryContent;
+        document.getElementById('summaryBar').innerHTML = `<span style="color:#888; font-size:0.8rem;">TOTAL PREP:</span> ` + Object.keys(totals).map(n => `<span class="summary-item">${totals[n]} ${n}</span>`).join('');
     }
-
     onValue(ref(db, 'orders'), (snapshot) => {
-        const grid = document.getElementById('kdsGrid'); 
-        const data = snapshot.val(); 
-        grid.innerHTML = ''; 
-        if (!data) { document.getElementById('orderCount').innerText = "0"; return; }
+        const grid = document.getElementById('kdsGrid'); const data = snapshot.val(); grid.innerHTML = ''; if (!data) { document.getElementById('orderCount').innerText = "0"; return; }
         document.getElementById('orderCount').innerText = Object.keys(data).length;
         Object.entries(data).forEach(([id, order]) => {
-            const slot = document.createElement('div'); 
-            slot.className = `slot`; 
-            slot.setAttribute('data-time', order.timestamp); 
-            slot.setAttribute('data-items', JSON.stringify(order.items));
-            slot.innerHTML = `<div class="slot-head"><span>${order.table}</span><span class="timer-display">0:00</span></div>
-                <div class="slot-body">${order.items.map(i => `<div>• ${i}</div>`).join('')}${order.note ? `<span class="item-note">NOTE: ${order.note}</span>` : ''}</div>
-                <div class="slot-foot" onclick='window.bump("${id}", ${JSON.stringify(order)})'>CLEAR</div>`;
+            const slot = document.createElement('div'); slot.className = `slot`; slot.setAttribute('data-time', order.timestamp); slot.setAttribute('data-items', JSON.stringify(order.items));
+            slot.innerHTML = `<div class="slot-head"><span>${order.table}</span><span class="timer-display">0:00</span></div><div class="slot-body">${order.items.map(i => `<div>• ${i}</div>`).join('')}${order.note ? `<span class="item-note">NOTE: ${order.note}</span>` : ''}</div><div class="slot-foot" onclick='window.bump("${id}", ${JSON.stringify(order)})'>CLEAR</div>`;
             grid.appendChild(slot);
         });
         tick();
     });
-
     window.bump = (id, order) => {
-        const completedRef = ref(db, 'completedOrders'); 
-        const historyRef = ref(db, 'history'); 
-        
-        const newCompletedPush = push(completedRef);
-        const newHistoryPush = push(historyRef);
-        
-        const completedId = newCompletedPush.key;
-        const historyId = newHistoryPush.key;
-
-        const finalizedData = { ...order, completedAt: Date.now() };
-
-        // Store both keys locally so Recall can delete from both locations
-        lastOrderRecallData = { 
-            ...order, 
-            completedId: completedId, 
-            historyId: historyId 
-        };
-
-        set(newCompletedPush, finalizedData);
-        set(newHistoryPush, finalizedData).then(() => { 
-            remove(ref(db, `orders/${id}`)); 
-            document.getElementById('recallBtn').style.display = 'block'; 
-        });
+        const compRef = push(ref(db, 'completedOrders')); const histRef = push(ref(db, 'history'));
+        const finalized = { ...order, completedAt: Date.now(), historyId: histRef.key };
+        lastRecall = { ...finalized, completedId: compRef.key };
+        set(compRef, finalized); set(histRef, finalized).then(() => { remove(ref(db, `orders/${id}`)); document.getElementById('recallBtn').style.display = 'block'; });
     };
-
-    window.recallLastOrder = () => { 
-        if (!lastOrderRecallData) return; 
-
-        const ordersRef = ref(db, 'orders'); 
-        
-        // Push back to active orders using original timestamp
-        push(ordersRef, { 
-            table: lastOrderRecallData.table, 
-            items: lastOrderRecallData.items, 
-            note: lastOrderRecallData.note || "", 
-            timestamp: lastOrderRecallData.timestamp 
-        }).then(() => { 
-            // Delete from both the pickup screen AND the permanent history
-            remove(ref(db, `completedOrders/${lastOrderRecallData.completedId}`)); 
-            remove(ref(db, `history/${lastOrderRecallData.historyId}`)); 
-            
-            lastOrderRecallData = null; 
-            document.getElementById('recallBtn').style.display = 'none'; 
-        }); 
-    };
-
-    setInterval(tick, 1000); 
-    setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
+    window.recallLastOrder = () => { if (!lastRecall) return; push(ref(db, 'orders'), { table: lastRecall.table, items: lastRecall.items, note: lastRecall.note || "", timestamp: lastRecall.timestamp }).then(() => { remove(ref(db, `completedOrders/${lastRecall.completedId}`)); remove(ref(db, `history/${lastRecall.historyId}`)); lastRecall = null; document.getElementById('recallBtn').style.display = 'none'; }); };
+    setInterval(tick, 1000); setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
 </script>
 </body>
 </html>
