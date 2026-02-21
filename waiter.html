@@ -3,208 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>POS WAITER - FULL SCREEN</title>
+    <title>LOVELY ENT - WAITER</title>
     <style>
         :root { --bg: #ffffff; --fg: #000000; --gray: #f2f2f2; }
         
-        /* Force body to fill screen */
         html, body { 
-            height: 100%; 
-            margin: 0; 
-            overflow: hidden; 
+            height: 100%; margin: 0; overflow: hidden; 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background: var(--bg);
-            color: var(--fg);
+            background: var(--bg); color: var(--fg);
         }
 
-        /* Container fills entire viewport */
-        .container { 
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            width: 100vw;
-            padding: 20px;
-            box-sizing: border-box;
-        }
+        .container { display: flex; flex-direction: column; height: 100vh; width: 100vw; padding: 20px; box-sizing: border-box; }
         
-        header { 
-            border-bottom: 2px solid var(--fg); 
-            padding-bottom: 10px; 
-            margin-bottom: 15px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: baseline;
+        header { border-bottom: 2px solid var(--fg); padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: baseline; flex-shrink: 0; }
+        h2 { margin: 0; letter-spacing: 1px; font-size: 1.4rem; font-weight: 800; }
+
+        .section-label { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; margin-bottom: 5px; opacity: 0.6; }
+
+        /* Scrollable Table Grid for high density */
+        .table-scroll-container {
             flex-shrink: 0;
+            max-height: 25vh;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 15px;
+            background: #fafafa;
         }
-        h2 { margin: 0; letter-spacing: 1px; font-size: 1.6rem; font-weight: 800; }
 
-        .section-label { font-size: 0.8rem; font-weight: 800; text-transform: uppercase; margin-bottom: 5px; opacity: 0.6; }
-
-        /* Table Grid */
         .table-grid { 
             display: grid; 
-            grid-template-columns: repeat(4, 1fr); 
-            gap: 10px; 
-            margin-bottom: 20px;
-            flex-shrink: 0;
+            grid-template-columns: repeat(5, 1fr); 
+            gap: 8px; 
         }
 
         /* Category Grid expands to fill space */
         .cat-grid { 
             display: grid; 
             grid-template-columns: repeat(2, 1fr); 
-            gap: 15px; 
-            flex-grow: 2; /* Takes up more room */
-            margin-bottom: 20px;
+            gap: 12px; 
+            flex-grow: 1;
+            margin-bottom: 15px;
         }
 
         button { 
-            background: var(--bg); 
-            color: var(--fg); 
-            border: 2px solid var(--fg); 
-            font-family: inherit; 
-            font-weight: 800; 
-            cursor: pointer; 
-            transition: 0.1s; 
-            font-size: 1.1rem;
+            background: var(--bg); color: var(--fg); border: 2px solid var(--fg); 
+            font-family: inherit; font-weight: 800; cursor: pointer; transition: 0.1s; 
         }
         button:active { background: var(--fg); color: var(--bg); }
-        .selected { background: var(--fg); color: var(--bg); }
+        .selected { background: var(--fg); color: var(--bg); box-shadow: 0 0 10px rgba(0,0,0,0.2); }
 
-        /* Summary Box expands to fill remaining space */
+        .table-btn { padding: 10px 5px; font-size: 0.8rem; }
+        .cat-btn { font-size: 1.1rem; padding: 20px 5px; }
+
+        /* Summary Box */
         .summary-box { 
-            border: 2px solid var(--fg); 
-            background: var(--gray); 
-            padding: 15px; 
-            flex-grow: 1; /* Fills leftover gap */
-            margin-bottom: 15px; 
-            position: relative;
-            overflow-y: auto;
+            border: 2px solid var(--fg); background: var(--gray); padding: 12px; 
+            height: 15vh; margin-bottom: 10px; position: relative; overflow-y: auto;
         }
-        .pill { 
-            border: 1px solid var(--fg); 
-            background: white; 
-            display: inline-block; 
-            padding: 8px 15px; 
-            margin: 5px; 
-            font-size: 1rem; 
-            font-weight: bold; 
-        }
+        .pill { border: 1px solid var(--fg); background: white; display: inline-block; padding: 6px 12px; margin: 3px; font-size: 0.9rem; font-weight: bold; }
 
-        .note-input { 
-            width: 100%; 
-            padding: 15px; 
-            border: 2px solid var(--fg); 
-            margin-bottom: 15px; 
-            font-family: inherit; 
-            box-sizing: border-box; 
-            display: none; 
-            font-size: 1rem;
-        }
-        .btn-note { 
-            background: #eee; 
-            border-style: dashed; 
-            margin-bottom: 15px; 
-            width: 100%; 
-            padding: 12px;
-            flex-shrink: 0;
-        }
+        .btn-note { background: #eee; border-style: dashed; margin-bottom: 10px; width: 100%; padding: 10px; flex-shrink: 0; font-weight: 700;}
 
-        .footer { 
-            display: grid; 
-            grid-template-columns: 2fr 1fr; 
-            gap: 10px; 
-            flex-shrink: 0;
-            padding-bottom: 10px;
-        }
-        .send-btn { 
-            background: var(--fg); 
-            color: var(--bg); 
-            font-size: 1.4rem; 
-            padding: 25px; 
-            font-weight: 900; 
-            border: none; 
-        }
+        .footer { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; flex-shrink: 0; padding-bottom: 10px; }
+        .send-btn { background: var(--fg); color: var(--bg); font-size: 1.2rem; padding: 20px; font-weight: 900; border: none; }
 
-        /* Overlay Styles */
-        #menuOverlay { 
-            display: none; 
-            position: fixed; 
-            top: 0; left: 0; 
-            width: 100vw; height: 100vh; 
-            background: var(--bg); 
-            z-index: 1000; 
-            padding: 20px; 
-            box-sizing: border-box; 
-        }
-        .overlay-header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            border-bottom: 3px solid var(--fg); 
-            padding-bottom: 15px; 
-            margin-bottom: 20px; 
-        }
-        .item-grid { 
-            display: grid; 
-            grid-template-columns: repeat(2, 1fr); 
-            gap: 15px; 
-            height: calc(100% - 100px);
-            overflow-y: auto;
-        }
-        .item-btn { padding: 30px 10px; font-size: 1.2rem; border-radius: 4px; }
+        /* Menu Overlay */
+        #menuOverlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg); z-index: 1000; padding: 20px; box-sizing: border-box; }
+        .overlay-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--fg); padding-bottom: 15px; margin-bottom: 20px; }
+        .item-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; height: calc(100% - 100px); overflow-y: auto; }
+        .item-btn { padding: 25px 10px; font-size: 1rem; border-radius: 4px; }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h2>LOVELY ENTERTAINMENT CLUB</h2>
+            <h2>LOVELY ENT CLUB</h2>
             <div id="clock" style="font-weight:bold;">00:00</div>
         </header>
 
-        <div class="section-label">Select Table</div>
-        <div class="grid table-grid">
-            <button onclick="setTable(this, 'T1')">T1</button>
-            <button onclick="setTable(this, 'T2')">T2</button>
-            <button onclick="setTable(this, 'T3')">T3</button>
-            <button onclick="setTable(this, 'T4')">T4</button>
-            <button onclick="setTable(this, 'T5')">T5</button>
-            <button onclick="setTable(this, 'T6')">T6</button>
-            <button onclick="setTable(this, 'T7')">T7</button>
-            <button onclick="setTable(this, 'T8')">T8</button>
-            <button onclick="setTable(this, 'T9')">T9</button>
-            <button onclick="setTable(this, 'T10')">T10</button>
-            <button onclick="setTable(this, 'T11')">T11</button>
-            <button onclick="setTable(this, 'T12')">T12</button>
-            <button onclick="setTable(this, 'COUCH 1')">COUCH 1</button>
-            <button onclick="setTable(this, 'COUCH 2')">COUCH 2</button>
-            <button onclick="setTable(this, 'COUCH 3')">COUCH 3</button>
-            <button onclick="setTable(this, 'COUCH 4')">COUCH 4</button>
-            <button onclick="setTable(this, 'COUCH 5')">COUCH 5</button>
-            <button onclick="setTable(this, 'COUCH 6')">COUCH 6</button>
-            <button onclick="setTable(this, 'COUCH 7')">COUCH 7</button>
-            <button onclick="setTable(this, 'COUCH 8')">COUCH 8</button>
-            <button onclick="setTable(this, 'VIP ROOM 1')">VIP ROOM 1</button>
-            <button onclick="setTable(this, 'VIP ROOM 2')">VIP ROOM 2</button>
-            <button onclick="setTable(this, 'BAR')">BAR</button>
+        <div class="section-label">Select Location</div>
+        <div class="table-scroll-container">
+            <div class="table-grid" id="mainTableGrid">
+                </div>
         </div>
 
         <div class="section-label">Categories</div>
         <div class="grid cat-grid">
-            <button onclick="openMenu('Mains')">MAINS</button>
-            <button onclick="openMenu('Sides')">SIDES</button>
-            <button onclick="openMenu('Drinks')">DRINKS</button>
-            <button onclick="openMenu('Dessert')">DESSERT</button>
+            <button class="cat-btn" onclick="openMenu('Mains')">MAINS</button>
+            <button class="cat-btn" onclick="openMenu('Sides')">SIDES</button>
+            <button class="cat-btn" onclick="openMenu('Drinks')">DRINKS</button>
+            <button class="cat-btn" onclick="openMenu('Dessert')">DESSERT</button>
         </div>
 
-        <div class="section-label">Order Details</div>
+        <div class="section-label">Current Order</div>
         <div class="summary-box">
-            <div id="orderList"><em>EMPTY ORDER</em></div>
-            <div id="runningTotal" style="margin-top:10px; font-weight:900; font-size: 1.2rem; border-top:2px solid #000; padding-top:10px; display:none;">TOTAL: ₱0</div>
+            <div id="orderList"><em>NO ITEMS</em></div>
+            <div id="runningTotal" style="margin-top:8px; font-weight:900; font-size: 1.1rem; border-top:1px solid #000; padding-top:5px; display:none;">TOTAL: ₱0</div>
         </div>
 
-        <button class="btn-note" id="noteToggle" onclick="toggleNote()">+ ADD KITCHEN NOTE</button>
-        <input type="text" id="orderNote" class="note-input" placeholder="e.g. NO ONIONS / EXTRA ICE">
+        <button class="btn-note" onclick="toggleNote()">+ KITCHEN NOTE</button>
+        <input type="text" id="orderNote" style="width:100%; padding:12px; border:2px solid #000; margin-bottom:10px; box-sizing:border-box; display:none;" placeholder="e.g. EXTRA ICE">
 
         <div class="footer">
             <button class="send-btn" onclick="submitOrder()">SEND ORDER</button>
@@ -214,8 +113,8 @@
 
     <div id="menuOverlay">
         <div class="overlay-header">
-            <h2 id="overlayTitle">CATEGORY</h2>
-            <button onclick="closeMenu()" style="background:var(--fg); color:var(--bg); padding:15px 30px; font-weight:bold; font-size:1.1rem;">DONE</button>
+            <h2 id="overlayTitle">MENU</h2>
+            <button onclick="closeMenu()" style="background:var(--fg); color:var(--bg); padding:12px 25px; font-weight:bold;">DONE</button>
         </div>
         <div class="item-grid" id="itemGrid"></div>
     </div>
@@ -241,14 +140,26 @@
     let orderData = {}; 
     
     const MENU = { 
-        'Mains': { 'Cheese Burger': 250, 'Chicken Burger': 220, 'Pepperoni Pizza': 450, 'Meat Lovers': 550 },
-        'Sides': { 'Fries': 120, 'Onion Rings': 150, 'Nuggets': 180, 'Salad': 160 },
-        'Drinks': { 'Coke': 60, 'Beer': 100, 'Water': 40, 'Iced Tea': 80 },
-        'Dessert': { 'Ice Cream': 120, 'Brownie': 150 }
+        'Mains': { 'Cheese Burger': 280, 'Chicken Burger': 260, 'Pepperoni Pizza': 480, 'Meat Lovers': 550, 'Club Sandwich': 220 },
+        'Sides': { 'Fries': 150, 'Onion Rings': 160, 'Nuggets': 180, 'Garlic Bread': 140 },
+        'Drinks': { 'Coke': 80, 'Beer': 120, 'Water': 50, 'Iced Tea': 90, 'Whiskey Shot': 250, 'Cocktail': 350 },
+        'Dessert': { 'Ice Cream': 150, 'Brownie': 180 }
     };
 
+    // Generate Tables
+    const grid = document.getElementById('mainTableGrid');
+    const tableList = [];
+    for(let i=1; i<=15; i++) tableList.push(`T${i}`);
+    for(let i=1; i<=10; i++) tableList.push(`COUCH ${i}`);
+    for(let i=1; i<=2; i++) tableList.push(`VIP ${i}`);
+    tableList.push('BAR');
+
+    grid.innerHTML = tableList.map(name => 
+        `<button class="table-btn" onclick="setTable(this, '${name}')">${name}</button>`
+    ).join('');
+
     window.setTable = (btn, table) => { 
-        document.querySelectorAll('.table-grid button').forEach(b => b.classList.remove('selected')); 
+        document.querySelectorAll('.table-btn').forEach(b => b.classList.remove('selected')); 
         btn.classList.add('selected'); 
         currentTable = table; 
     };
@@ -283,7 +194,7 @@
             for(let cat in MENU) { if(MENU[cat][k]) price = MENU[cat][k]; }
             currentTotal += (price * orderData[k]);
             return `<span class="pill">${orderData[k]}x ${k}</span>`;
-        }).join('') : '<em>EMPTY ORDER</em>';
+        }).join('') : '<em>NO ITEMS</em>';
         
         if(keys.length > 0) { totalDisp.style.display = "block"; totalDisp.innerText = "TOTAL: ₱" + currentTotal; }
         else { totalDisp.style.display = "none"; }
@@ -294,7 +205,7 @@
         document.getElementById('orderNote').value = ""; 
         document.getElementById('orderNote').style.display = "none"; 
         updateUI(); 
-        document.querySelectorAll('.table-grid button').forEach(b => b.classList.remove('selected')); 
+        document.querySelectorAll('.table-btn').forEach(b => b.classList.remove('selected')); 
     };
 
     window.submitOrder = () => {
@@ -312,7 +223,7 @@
             totalValue: orderTotal, 
             timestamp: Date.now() 
         }).then(() => { 
-            alert("Order Sent!"); 
+            alert("Order Sent to Kitchen!"); 
             resetOrder(); 
         });
     };
