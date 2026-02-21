@@ -185,7 +185,7 @@
         <div class="section-label">Order Details</div>
         <div class="summary-box">
             <div id="orderList"><em>EMPTY ORDER</em></div>
-            <div id="runningTotal" style="margin-top:10px; font-weight:900; font-size: 1.2rem; border-top:2px solid #000; padding-top:10px; display:none;">TOTAL: $0</div>
+            <div id="runningTotal" style="margin-top:10px; font-weight:900; font-size: 1.2rem; border-top:2px solid #000; padding-top:10px; display:none;">TOTAL: ₱0</div>
         </div>
 
         <button class="btn-note" id="noteToggle" onclick="toggleNote()">+ ADD KITCHEN NOTE</button>
@@ -226,10 +226,10 @@
     let orderData = {}; 
     
     const MENU = { 
-        'Mains': { 'Cheese Burger': 12, 'Chicken Burger': 11, 'Pepperoni Pizza': 15, 'Meat Lovers': 17 },
-        'Sides': { 'Fries': 5, 'Onion Rings': 6, 'Nuggets': 8, 'Salad': 7 },
-        'Drinks': { 'Coke': 3, 'Beer': 7, 'Water': 2, 'Iced Tea': 4 },
-        'Dessert': { 'Ice Cream': 5, 'Brownie': 6 }
+        'Mains': { 'Cheese Burger': 250, 'Chicken Burger': 220, 'Pepperoni Pizza': 450, 'Meat Lovers': 550 },
+        'Sides': { 'Fries': 120, 'Onion Rings': 150, 'Nuggets': 180, 'Salad': 160 },
+        'Drinks': { 'Coke': 60, 'Beer': 100, 'Water': 40, 'Iced Tea': 80 },
+        'Dessert': { 'Ice Cream': 120, 'Brownie': 150 }
     };
 
     window.setTable = (btn, table) => { 
@@ -241,7 +241,7 @@
     window.openMenu = (cat) => {
         document.getElementById('overlayTitle').innerText = cat.toUpperCase();
         const items = Object.keys(MENU[cat]);
-        document.getElementById('itemGrid').innerHTML = items.map(item => `<button class="item-btn" onclick="addItem('${item}')">${item}<br><small>$${MENU[cat][item]}</small></button>`).join('');
+        document.getElementById('itemGrid').innerHTML = items.map(item => `<button class="item-btn" onclick="addItem('${item}')">${item}<br><small>₱${MENU[cat][item]}</small></button>`).join('');
         document.getElementById('menuOverlay').style.display = 'block';
     };
 
@@ -270,7 +270,7 @@
             return `<span class="pill">${orderData[k]}x ${k}</span>`;
         }).join('') : '<em>EMPTY ORDER</em>';
         
-        if(keys.length > 0) { totalDisp.style.display = "block"; totalDisp.innerText = "TOTAL: $" + currentTotal; }
+        if(keys.length > 0) { totalDisp.style.display = "block"; totalDisp.innerText = "TOTAL: ₱" + currentTotal; }
         else { totalDisp.style.display = "none"; }
     }
 
@@ -297,7 +297,7 @@
             totalValue: orderTotal, 
             timestamp: Date.now() 
         }).then(() => { 
-            alert("Sent!"); 
+            alert("Order Sent!"); 
             resetOrder(); 
         });
     };
