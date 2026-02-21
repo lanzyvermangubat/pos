@@ -3,95 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>POS Reports - Performance</title>
+    <title>REPORTS</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f8f9fa; margin: 0; padding: 20px; color: #333; }
+        :root { --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { font-family: var(--font); background: #f8f9fa; margin: 0; padding: 20px; color: #000; }
         .container { max-width: 900px; margin: auto; }
-        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ddd; padding-bottom: 10px; margin-bottom: 20px; }
+        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+        h1 { font-weight: 800; }
         .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .stat-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); text-align: center; }
-        .stat-value { font-size: 2rem; font-weight: bold; color: #1a73e8; display: block; }
-        .stat-label { color: #666; font-size: 0.9rem; text-transform: uppercase; }
-        table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        th { background: #1a73e8; color: white; padding: 15px; text-align: left; }
-        td { padding: 15px; border-bottom: 1px solid #eee; }
-        .time-badge { padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 0.85rem; }
-        .fast { background: #e6ffed; color: #22863a; }
-        .slow { background: #ffeef0; color: #cb2431; }
-        .reset-btn { background: #dc3545; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .stat-card { background: white; padding: 20px; border: 1px solid #000; text-align: center; }
+        .stat-value { font-size: 2.5rem; font-weight: 900; display: block; }
+        .stat-label { color: #555; font-size: 0.8rem; font-weight: 800; text-transform: uppercase; }
+        table { width: 100%; border-collapse: collapse; background: white; border: 1px solid #000; }
+        th { background: #000; color: #fff; padding: 15px; text-align: left; font-weight: 800; }
+        td { padding: 15px; border-bottom: 1px solid #ddd; font-weight: 600; }
+        .reset-btn { background: #000; color: white; border: none; padding: 10px 15px; font-weight: 800; cursor: pointer; }
     </style>
 </head>
 <body>
 <div class="container">
-    <header>
-        <h1>Shift Performance Report</h1>
-        <button class="reset-btn" onclick="window.resetDailyStats()">RESET DAILY STATS</button>
-    </header>
+    <header><h1>SHIFT REPORT</h1><button class="reset-btn" onclick="window.resetDailyStats()">RESET DATA</button></header>
     <div class="stats-row">
-        <div class="stat-card"><span class="stat-value" id="totalOrders">0</span><span class="stat-label">Total Orders</span></div>
-        <div class="stat-card"><span class="stat-value" id="avgCookTime">0m</span><span class="stat-label">Avg. Cook Time</span></div>
-        <div class="stat-card"><span class="stat-value" id="totalItems">0</span><span class="stat-label">Total Items Sold</span></div>
+        <div class="stat-card"><span class="stat-value" id="totalOrders">0</span><span class="stat-label">Orders</span></div>
+        <div class="stat-card"><span class="stat-value" id="avgCookTime">0m</span><span class="stat-label">Avg Cook</span></div>
+        <div class="stat-card"><span class="stat-value" id="totalItems">0</span><span class="stat-label">Items Sold</span></div>
     </div>
     <table>
-        <thead><tr><th>Table</th><th>Items</th><th>Wait Time</th><th>Time Completed</th></tr></thead>
+        <thead><tr><th>Table</th><th>Items</th><th>Wait</th><th>Finished</th></tr></thead>
         <tbody id="historyBody"></tbody>
     </table>
 </div>
-
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
     import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyB1BND4Pd7vpd_8LJW1IwZB36-4uFdO6R4",
-        authDomain: "pos-lovelyentclub.firebaseapp.com",
-        databaseURL: "https://pos-lovelyentclub-default-rtdb.firebaseio.com",
-        projectId: "pos-lovelyentclub",
-        storageBucket: "pos-lovelyentclub.firebasestorage.app",
-        messagingSenderId: "271664805776",
-        appId: "1:271664805776:web:38b2482645209cd7f56515"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const historyRef = ref(db, 'history');
-
-    onValue(historyRef, (snapshot) => {
-        const data = snapshot.val();
-        const tbody = document.getElementById('historyBody');
-        tbody.innerHTML = '';
-        if (!data) {
-            document.getElementById('totalOrders').innerText = "0";
-            document.getElementById('avgCookTime').innerText = "0m";
-            document.getElementById('totalItems').innerText = "0";
-            return;
-        }
-
-        let totalWaitMinutes = 0, itemCount = 0;
-        const orders = Object.values(data).sort((a, b) => b.completedAt - a.completedAt);
-
+    const firebaseConfig = { apiKey: "AIzaSyB1BND4Pd7vpd_8LJW1IwZB36-4uFdO6R4", authDomain: "pos-lovelyentclub.firebaseapp.com", databaseURL: "https://pos-lovelyentclub-default-rtdb.firebaseio.com", projectId: "pos-lovelyentclub", storageBucket: "pos-lovelyentclub.firebasestorage.app", messagingSenderId: "271664805776", appId: "1:271664805776:web:38b2482645209cd7f56515" };
+    const app = initializeApp(firebaseConfig); const db = getDatabase(app);
+    onValue(ref(db, 'history'), (snapshot) => {
+        const data = snapshot.val(); const tbody = document.getElementById('historyBody'); tbody.innerHTML = ''; if (!data) { document.getElementById('totalOrders').innerText = "0"; document.getElementById('avgCookTime').innerText = "0m"; document.getElementById('totalItems').innerText = "0"; return; }
+        let totalWaitMinutes = 0, itemCount = 0; const orders = Object.values(data).sort((a, b) => b.completedAt - a.completedAt);
         orders.forEach(order => {
-            const cookTime = Math.round((order.completedAt - order.timestamp) / 60000);
-            totalWaitMinutes += cookTime;
+            const cookTime = Math.round((order.completedAt - order.timestamp) / 60000); totalWaitMinutes += cookTime;
             itemCount += order.items.reduce((acc, i) => acc + (parseInt(i.split('x ')[0]) || 1), 0);
-
             const row = document.createElement('tr');
-            row.innerHTML = `<td><strong>${order.table}</strong></td><td>${order.items.join(', ')}</td>
-                <td><span class="time-badge ${cookTime > 12 ? 'slow' : 'fast'}">${cookTime} mins</span></td>
-                <td>${new Date(order.completedAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>`;
+            row.innerHTML = `<td><strong>${order.table}</strong></td><td>${order.items.join(', ')}</td><td>${cookTime}m</td><td>${new Date(order.completedAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>`;
             tbody.appendChild(row);
         });
-
-        document.getElementById('totalOrders').innerText = orders.length;
-        document.getElementById('totalItems').innerText = itemCount;
-        document.getElementById('avgCookTime').innerText = Math.round(totalWaitMinutes / orders.length) + 'm';
+        document.getElementById('totalOrders').innerText = orders.length; document.getElementById('totalItems').innerText = itemCount; document.getElementById('avgCookTime').innerText = Math.round(totalWaitMinutes / orders.length) + 'm';
     });
-
-    window.resetDailyStats = () => {
-        if(confirm("Are you sure? This will delete all permanent history for the reports.")){
-            remove(historyRef);
-        }
-    };
+    window.resetDailyStats = () => { if(confirm("Confirm: Delete all report history?")) remove(ref(db, 'history')); };
 </script>
 </body>
 </html>
