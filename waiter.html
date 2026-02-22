@@ -3,37 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LOVELY ENT - SMART PICKER</title>
+    <title>LOVELY ENT - PRO POS</title>
     <style>
-        :root { --bg: #ffffff; --fg: #000000; --gray: #f2f2f2; --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        :root { --bg: #ffffff; --fg: #000000; --gray: #f2f2f2; --table: #007aff; --couch: #34c759; --vip: #ffcc00; }
         
-        html, body { height: 100%; margin: 0; overflow: hidden; font-family: var(--font); background: var(--bg); color: var(--fg); }
+        html, body { height: 100%; margin: 0; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--fg); }
         .container { display: flex; flex-direction: column; height: 100vh; width: 100vw; padding: 20px; box-sizing: border-box; }
         
         header { border-bottom: 2px solid var(--fg); padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: baseline; flex-shrink: 0; }
         h2 { margin: 0; letter-spacing: 1px; font-size: 1.4rem; font-weight: 800; }
 
-        .section-label { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-bottom: 8px; opacity: 0.6; }
+        .section-label { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; margin-bottom: 5px; opacity: 0.6; }
 
-        /* Table Type Selection - Big Buttons */
-        .type-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; flex-shrink: 0; }
-        .type-btn { padding: 25px 10px; font-size: 1rem; border-width: 2px; }
-        .active-selection { background: #000; color: #fff; padding: 10px; margin-bottom: 15px; font-weight: 900; text-align: center; border: 1px solid #000; }
+        /* Compact Location Selection */
+        .type-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 15px; flex-shrink: 0; }
+        .type-btn { padding: 12px 5px; font-size: 0.75rem; border-width: 2px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .icon-dot { width: 12px; height: 12px; border-radius: 50%; border: 1px solid #000; }
+        
+        .active-selection { background: #000; color: #fff; padding: 12px; margin-bottom: 15px; font-weight: 900; text-align: center; border: 1px solid #000; font-size: 0.9rem; letter-spacing: 1px; }
 
-        /* Category Grid */
-        .cat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; flex-grow: 1; margin-bottom: 15px; }
-        button { background: var(--bg); color: var(--fg); border: 2px solid var(--fg); font-family: inherit; font-weight: 800; cursor: pointer; transition: 0.1s; }
+        /* Larger Menu Categories */
+        .cat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; flex-grow: 3; margin-bottom: 15px; }
+        .cat-btn { font-size: 1.4rem; border-width: 3px; }
+
+        button { background: var(--bg); color: var(--fg); border: 2px solid var(--fg); font-family: inherit; font-weight: 800; cursor: pointer; transition: 0.1s; text-transform: uppercase; }
         button:active { background: var(--fg); color: var(--bg); }
         
         /* Summary & Note */
-        .summary-box { border: 2px solid var(--fg); background: var(--gray); padding: 12px; height: 15vh; margin-bottom: 10px; overflow-y: auto; }
+        .summary-box { border: 2px solid var(--fg); background: var(--gray); padding: 12px; height: 12vh; margin-bottom: 10px; overflow-y: auto; }
         .pill { border: 1px solid var(--fg); background: white; display: inline-block; padding: 6px 12px; margin: 3px; font-size: 0.9rem; font-weight: bold; }
-        .btn-note { background: #eee; border-style: dashed; margin-bottom: 10px; width: 100%; padding: 12px; font-weight: 700; border-width: 2px; }
+        .btn-note { background: #eee; border-style: dashed; margin-bottom: 10px; width: 100%; padding: 10px; font-weight: 700; border-width: 2px; font-family: inherit; }
 
         .footer { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; flex-shrink: 0; padding-bottom: 10px; }
-        .send-btn { background: var(--fg); color: var(--bg); font-size: 1.2rem; padding: 20px; font-weight: 900; border: none; }
+        .send-btn { background: var(--fg); color: var(--bg); font-size: 1.3rem; padding: 22px; font-weight: 900; border: none; }
 
-        /* Overlays (Shared Styles) */
+        /* Overlays */
         .full-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg); z-index: 1000; padding: 20px; box-sizing: border-box; }
         .overlay-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--fg); padding-bottom: 15px; margin-bottom: 20px; }
         .scroll-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; height: calc(100% - 100px); overflow-y: auto; }
@@ -47,21 +51,21 @@
             <div id="clock" style="font-weight:bold;">00:00</div>
         </header>
 
-        <div class="section-label">Location Selection</div>
-        <div id="currentTableDisplay" class="active-selection">NO LOCATION SELECTED</div>
+        <div class="section-label">Location</div>
+        <div id="currentTableDisplay" class="active-selection">SELECT LOCATION</div>
         <div class="type-grid">
-            <button class="type-btn" onclick="openPicker('TABLE')">TABLES (15)</button>
-            <button class="type-btn" onclick="openPicker('COUCH')">COUCHES (10)</button>
-            <button class="type-btn" onclick="openPicker('VIP')">VIP ROOMS (2)</button>
-            <button class="type-btn" onclick="pickTable('BAR')">BAR</button>
+            <button class="type-btn" onclick="openPicker('TABLE')"><div class="icon-dot" style="background:var(--table)"></div>TABLE</button>
+            <button class="type-btn" onclick="openPicker('COUCH')"><div class="icon-dot" style="background:var(--couch)"></div>COUCH</button>
+            <button class="type-btn" onclick="openPicker('VIP')"><div class="icon-dot" style="background:var(--vip)"></div>VIP</button>
+            <button class="type-btn" onclick="pickTable('BAR')"><div class="icon-dot" style="background:#000"></div>BAR</button>
         </div>
 
-        <div class="section-label">Menu Categories</div>
-        <div class="grid cat-grid">
-            <button onclick="openMenu('Mains')">MAINS</button>
-            <button onclick="openMenu('Sides')">SIDES</button>
-            <button onclick="openMenu('Drinks')">DRINKS</button>
-            <button onclick="openMenu('Dessert')">DESSERT</button>
+        <div class="section-label">Menu Selection</div>
+        <div class="cat-grid">
+            <button class="cat-btn" onclick="openMenu('Mains')" style="border-left: 8px solid #000;">MAINS</button>
+            <button class="cat-btn" onclick="openMenu('Sides')" style="border-left: 8px solid #444;">SIDES</button>
+            <button class="cat-btn" onclick="openMenu('Drinks')" style="border-left: 8px solid #888;">DRINKS</button>
+            <button class="cat-btn" onclick="openMenu('Dessert')" style="border-left: 8px solid #ccc;">DESSERT</button>
         </div>
 
         <div class="summary-box">
@@ -69,8 +73,8 @@
             <div id="runningTotal" style="margin-top:8px; font-weight:900; font-size: 1.1rem; border-top:1px solid #000; padding-top:5px; display:none;">TOTAL: ₱0</div>
         </div>
 
-        <button class="btn-note" onclick="toggleNote()">+ ADD KITCHEN NOTE</button>
-        <input type="text" id="orderNote" style="width:100%; padding:15px; border:2px solid #000; margin-bottom:10px; box-sizing:border-box; display:none;" placeholder="e.g. EXTRA ICE">
+        <button class="btn-note" onclick="toggleNote()">+ KITCHEN NOTE</button>
+        <input type="text" id="orderNote" style="width:100%; padding:15px; border:2px solid #000; margin-bottom:10px; box-sizing:border-box; display:none;" placeholder="e.g. LESS ICE">
 
         <div class="footer">
             <button class="send-btn" onclick="submitOrder()">SEND ORDER</button>
@@ -80,8 +84,8 @@
 
     <div id="pickerOverlay" class="full-overlay">
         <div class="overlay-header">
-            <h2 id="pickerTitle">SELECT NUMBER</h2>
-            <button onclick="closePicker()" style="background:var(--fg); color:var(--bg); padding:12px 25px; font-weight:bold;">CANCEL</button>
+            <h2 id="pickerTitle">SELECT</h2>
+            <button onclick="closePicker()" style="background:var(--fg); color:var(--bg); padding:12px 25px; font-weight:bold;">BACK</button>
         </div>
         <div class="scroll-grid" id="pickerGrid"></div>
     </div>
@@ -89,7 +93,7 @@
     <div id="menuOverlay" class="full-overlay">
         <div class="overlay-header">
             <h2 id="menuTitle">MENU</h2>
-            <button onclick="closeMenu()" style="background:var(--fg); color:var(--bg); padding:12px 25px; font-weight:bold;">DONE</button>
+            <button onclick="closeMenu()" style="background:var(--fg); color:var(--bg); padding:12px 25px; font-weight:bold;">BACK</button>
         </div>
         <div class="scroll-grid" id="menuGrid" style="grid-template-columns: repeat(2, 1fr);"></div>
     </div>
@@ -123,15 +127,18 @@
 
     const TABLE_COUNTS = { 'TABLE': 15, 'COUCH': 10, 'VIP': 2 };
 
-    // PICKER LOGIC
     window.openPicker = (type) => {
-        document.getElementById('pickerTitle').innerText = `SELECT ${type}`;
+        document.getElementById('pickerTitle').innerText = `${type} NUMBER`;
         const grid = document.getElementById('pickerGrid');
         grid.innerHTML = '';
         
+        let color = "var(--table)";
+        if(type === 'COUCH') color = "var(--couch)";
+        if(type === 'VIP') color = "var(--vip)";
+
         for(let i=1; i <= TABLE_COUNTS[type]; i++) {
             const name = `${type} ${i}`;
-            grid.innerHTML += `<button class="large-btn" onclick="pickTable('${name}')">${name}</button>`;
+            grid.innerHTML += `<button class="large-btn" style="border-color:${color}" onclick="pickTable('${name}')">${name}</button>`;
         }
         document.getElementById('pickerOverlay').style.display = 'block';
     };
@@ -140,13 +147,12 @@
 
     window.pickTable = (name) => {
         currentTable = name;
-        document.getElementById('currentTableDisplay').innerText = `SELECTED: ${name}`;
+        document.getElementById('currentTableDisplay').innerText = name;
         document.getElementById('currentTableDisplay').style.background = "#fff";
         document.getElementById('currentTableDisplay').style.color = "#000";
         closePicker();
     };
 
-    // MENU LOGIC
     window.openMenu = (cat) => {
         document.getElementById('menuTitle').innerText = cat.toUpperCase();
         const grid = document.getElementById('menuGrid');
@@ -187,7 +193,7 @@
 
     window.resetOrder = () => { 
         orderData = {}; currentTable = ""; 
-        document.getElementById('currentTableDisplay').innerText = "NO LOCATION SELECTED";
+        document.getElementById('currentTableDisplay').innerText = "SELECT LOCATION";
         document.getElementById('currentTableDisplay').style.background = "#000";
         document.getElementById('currentTableDisplay').style.color = "#fff";
         document.getElementById('orderNote').value = ""; 
@@ -202,7 +208,7 @@
             orderTotal += (p * orderData[k]);
             return `${orderData[k]}x ${k}`;
         });
-        if (!currentTable || items.length === 0) return alert("Please select a location and items!");
+        if (!currentTable || items.length === 0) return alert("Select Location & Items");
         push(ref(db, 'orders'), { 
             table: currentTable, 
             items, 
@@ -210,7 +216,7 @@
             totalValue: orderTotal, 
             timestamp: Date.now() 
         }).then(() => { 
-            alert("Order Sent!"); 
+            alert("Sent!"); 
             resetOrder(); 
         });
     };
