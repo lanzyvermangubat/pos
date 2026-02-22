@@ -6,37 +6,49 @@
     <title>LOVELY ENT - PRO POS</title>
     <style>
         :root { --bg: #ffffff; --fg: #000000; --gray: #f2f2f2; --table: #007aff; --couch: #34c759; --vip: #ffcc00; }
-        html, body { height: 100%; margin: 0; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--fg); }
-        .container { display: flex; flex-direction: column; height: 100vh; width: 100vw; padding: 20px; box-sizing: border-box; }
-        header { border-bottom: 2px solid var(--fg); padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: baseline; flex-shrink: 0; }
-        h2 { margin: 0; letter-spacing: 1px; font-size: 1.4rem; font-weight: 800; }
-        .section-label { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; margin-bottom: 5px; opacity: 0.6; }
+        html, body { height: 100%; margin: 0; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--fg); }
+        .container { display: flex; flex-direction: column; height: 100vh; width: 100vw; padding: 15px; box-sizing: border-box; }
+        
+        header { border-bottom: 2px solid var(--fg); padding-bottom: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: baseline; flex-shrink: 0; }
+        h2 { margin: 0; letter-spacing: 1px; font-size: 1.2rem; font-weight: 800; }
+        .section-label { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; margin-bottom: 5px; opacity: 0.6; }
+
+        /* Location Bar */
         .type-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 10px; flex-shrink: 0; }
-        .type-btn { padding: 12px 5px; font-size: 0.75rem; border-width: 2px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .icon-dot { width: 12px; height: 12px; border-radius: 50%; border: 1px solid #000; }
-        .active-selection { background: #000; color: #fff; padding: 12px; margin-bottom: 10px; font-weight: 900; text-align: center; border: 1px solid #000; font-size: 0.9rem; letter-spacing: 1px; }
-        .cat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; flex-grow: 3; margin-bottom: 15px; overflow-y: auto; }
-        .cat-btn { font-size: 1.1rem; border-width: 3px; padding: 15px 5px; }
-        button { background: var(--bg); color: var(--fg); border: 2px solid var(--fg); font-family: inherit; font-weight: 800; cursor: pointer; transition: 0.1s; text-transform: uppercase; }
-        button:active { background: var(--fg); color: var(--bg); }
-        .summary-box { border: 2px solid var(--fg); background: var(--gray); padding: 12px; height: 12vh; margin-bottom: 10px; overflow-y: auto; }
-        .pill { border: 1px solid var(--fg); background: white; display: inline-block; padding: 6px 12px; margin: 3px; font-size: 0.9rem; font-weight: bold; }
-        .btn-note { background: #eee; border-style: dashed; margin-bottom: 10px; width: 100%; padding: 10px; font-weight: 700; border-width: 2px; font-family: inherit; }
-        .footer { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; flex-shrink: 0; padding-bottom: 10px; }
-        .send-btn { background: var(--fg); color: var(--bg); font-size: 1.3rem; padding: 22px; font-weight: 900; border: none; }
-        .status-bar { background: #eee; padding: 5px 10px; font-size: 0.75rem; font-weight: 800; display: flex; justify-content: space-around; border: 1px solid #000; margin-bottom: 5px; }
+        .type-btn { padding: 10px 5px; font-size: 0.7rem; border: 2px solid #000; display: flex; flex-direction: column; align-items: center; gap: 4px; font-weight: 800; background: #fff; cursor: pointer; }
+        .icon-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .active-selection { background: #000; color: #fff; padding: 10px; margin-bottom: 10px; font-weight: 900; text-align: center; border: 1px solid #000; font-size: 0.9rem; }
+
+        /* Split Menu Selection */
+        .menu-layout { display: grid; grid-template-columns: 1.2fr 1fr; gap: 15px; flex-grow: 1; overflow: hidden; margin-bottom: 10px; }
+        .menu-column { display: flex; flex-direction: column; gap: 8px; }
+        .cat-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
+        .cat-btn { padding: 15px 10px; font-size: 1rem; border-width: 3px; text-align: left; font-weight: 900; cursor: pointer; background: #fff; }
+
+        /* Summary Area */
+        .status-bar { background: #eee; padding: 8px; font-size: 0.7rem; font-weight: 800; display: flex; justify-content: space-around; border: 1px solid #000; margin-bottom: 8px; }
+        .summary-box { border: 2px solid var(--fg); background: var(--gray); padding: 10px; height: 10vh; margin-bottom: 10px; overflow-y: auto; flex-shrink: 0; }
+        .pill { border: 1px solid var(--fg); background: white; display: inline-block; padding: 5px 10px; margin: 2px; font-size: 0.8rem; font-weight: bold; }
+
+        .footer { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; flex-shrink: 0; padding-bottom: 5px; }
+        .send-btn { background: var(--fg); color: var(--bg); font-size: 1.2rem; padding: 18px; font-weight: 900; border: none; cursor: pointer; }
+
+        /* Overlays */
         .full-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg); z-index: 1000; padding: 20px; box-sizing: border-box; }
         .overlay-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--fg); padding-bottom: 15px; margin-bottom: 20px; }
-        .scroll-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; height: calc(100% - 100px); overflow-y: auto; }
-        .large-btn { padding: 30px 10px; font-size: 1.2rem; }
+        .scroll-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; height: calc(100% - 100px); overflow-y: auto; }
+        .large-btn { padding: 25px 10px; font-size: 1.1rem; font-weight: 800; border: 2px solid #000; background: #fff; }
+
+        /* Confirmation Modal */
+        #confirmOverlay { background: rgba(0,0,0,0.85); color: #fff; display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000; flex-direction: column; align-items: center; justify-content: center; padding: 30px; box-sizing: border-box; }
+        .confirm-card { background: #fff; color: #000; width: 100%; max-width: 500px; padding: 25px; border-radius: 10px; }
+        .confirm-items { margin: 20px 0; max-height: 40vh; overflow-y: auto; border-top: 1px solid #eee; padding-top: 15px; }
+        .confirm-type { font-size: 0.7rem; font-weight: 800; color: #666; margin-top: 10px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h2>LOVELY ENT CLUB</h2>
-            <div id="clock" style="font-weight:bold;">00:00</div>
-        </header>
+        <header><h2>LOVELY ENT CLUB</h2><div id="clock" style="font-weight:bold;">00:00</div></header>
 
         <div class="section-label">Location</div>
         <div id="currentTableDisplay" class="active-selection">SELECT LOCATION</div>
@@ -47,15 +59,24 @@
             <button class="type-btn" onclick="pickTable('BAR')"><div class="icon-dot" style="background:#000"></div>BAR</button>
         </div>
 
-        <div class="section-label">Menu Selection</div>
-        <div class="cat-grid">
-            <button class="cat-btn" onclick="openMenu('Appetizers')" style="border-left: 8px solid #000;">Appetizers</button>
-            <button class="cat-btn" onclick="openMenu('Alcoholic Beverages')" style="border-left: 8px solid #444;">Alcoholic</button>
-            <button class="cat-btn" onclick="openMenu('Beverages')" style="border-left: 8px solid #888;">Beverages</button>
-            <button class="cat-btn" onclick="openMenu('Soups')" style="border-left: 8px solid #ccc;">Soups</button>
-            <button class="cat-btn" onclick="openMenu('Salads')" style="border-left: 8px solid #000;">Salads</button>
-            <button class="cat-btn" onclick="openMenu('Mains')" style="border-left: 8px solid #444;">Mains</button>
-            <button class="cat-btn" onclick="openMenu('Desserts')" style="border-left: 8px solid #888; grid-column: span 2;">Desserts</button>
+        <div class="menu-layout">
+            <div class="menu-column">
+                <div class="section-label">🍽️ Kitchen Menu</div>
+                <div class="cat-grid">
+                    <button class="cat-btn" onclick="openMenu('Appetizers')" style="border-left: 10px solid #000;">Appetizers</button>
+                    <button class="cat-btn" onclick="openMenu('Soups')" style="border-left: 10px solid #000;">Soups</button>
+                    <button class="cat-btn" onclick="openMenu('Salads')" style="border-left: 10px solid #000;">Salads</button>
+                    <button class="cat-btn" onclick="openMenu('Mains')" style="border-left: 10px solid #000;">Mains</button>
+                    <button class="cat-btn" onclick="openMenu('Desserts')" style="border-left: 10px solid #000;">Desserts</button>
+                </div>
+            </div>
+            <div class="menu-column">
+                <div class="section-label">🍺 Bar Menu</div>
+                <div class="cat-grid">
+                    <button class="cat-btn" onclick="openMenu('Alcoholic')" style="border-left: 10px solid var(--table);">Alcoholic</button>
+                    <button class="cat-btn" onclick="openMenu('Beverages')" style="border-left: 10px solid var(--table);">Beverages</button>
+                </div>
+            </div>
         </div>
 
         <div class="status-bar" id="liveStatus">
@@ -63,170 +84,125 @@
             <span id="barStatus">🍺 BAR: --</span>
         </div>
 
-        <div class="summary-box">
-            <div id="orderList"><em>NO ITEMS</em></div>
-            <div id="runningTotal" style="margin-top:8px; font-weight:900; font-size: 1.1rem; border-top:1px solid #000; padding-top:5px; display:none;">TOTAL: ₱0</div>
-        </div>
-
-        <button class="btn-note" onclick="toggleNote()">+ KITCHEN NOTE</button>
-        <input type="text" id="orderNote" style="width:100%; padding:15px; border:2px solid #000; margin-bottom:10px; box-sizing:border-box; display:none;" placeholder="e.g. LESS ICE">
+        <div class="summary-box" id="orderList"><em>NO ITEMS</em></div>
 
         <div class="footer">
-            <button class="send-btn" onclick="submitOrder()">SEND ORDER</button>
-            <button onclick="resetOrder()">RESET</button>
+            <button class="send-btn" onclick="showConfirmation()">SEND ORDER</button>
+            <button onclick="resetOrder()" style="font-weight:800; border:2px solid #000; background:#fff;">RESET</button>
         </div>
     </div>
 
     <div id="pickerOverlay" class="full-overlay">
-        <div class="overlay-header">
-            <h2 id="pickerTitle">SELECT</h2>
-            <button onclick="closePicker()" style="background:var(--fg); color:var(--bg); padding:12px 25px; font-weight:bold;">BACK</button>
-        </div>
-        <div class="scroll-grid" id="pickerGrid"></div>
+        <div class="overlay-header"><h2>SELECT NUMBER</h2><button onclick="closeOverlay('pickerOverlay')" style="background:#000; color:#fff; padding:12px 25px; font-weight:800;">BACK</button></div>
+        <div class="scroll-grid" id="pickerGrid" style="grid-template-columns: repeat(3, 1fr);"></div>
     </div>
 
     <div id="menuOverlay" class="full-overlay">
-        <div class="overlay-header">
-            <h2 id="menuTitle">MENU</h2>
-            <button onclick="closeMenu()" style="background:var(--fg); color:var(--bg); padding:12px 25px; font-weight:bold;">BACK</button>
+        <div class="overlay-header"><h2 id="menuTitle">MENU</h2><button onclick="closeOverlay('menuOverlay')" style="background:#000; color:#fff; padding:12px 25px; font-weight:800;">DONE</button></div>
+        <div class="scroll-grid" id="menuGrid"></div>
+    </div>
+
+    <div id="confirmOverlay">
+        <div class="confirm-card">
+            <h2 style="margin:0; border-bottom:2px solid #000; padding-bottom:10px;">Confirm Order</h2>
+            <p id="confirmTable" style="font-weight:900; font-size:1.2rem; margin:15px 0;"></p>
+            <div class="confirm-items" id="confirmList"></div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-top:20px;">
+                <button onclick="closeConfirmation()" style="padding:20px; font-weight:800; border:2px solid #000; background:#fff;">CANCEL</button>
+                <button onclick="submitOrder()" style="padding:20px; font-weight:900; background:#000; color:#fff; border:none;">SEND NOW</button>
+            </div>
         </div>
-        <div class="scroll-grid" id="menuGrid" style="grid-template-columns: repeat(2, 1fr);"></div>
     </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
     import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
-    
     const firebaseConfig = { apiKey: "AIzaSyB1BND4Pd7vpd_8LJW1IwZB36-4uFdO6R4", authDomain: "pos-lovelyentclub.firebaseapp.com", databaseURL: "https://pos-lovelyentclub-default-rtdb.firebaseio.com", projectId: "pos-lovelyentclub", storageBucket: "pos-lovelyentclub.firebasestorage.app", messagingSenderId: "271664805776", appId: "1:271664805776:web:38b2482645209cd7f56515" };
     const app = initializeApp(firebaseConfig); const db = getDatabase(app);
 
     let currentTable = ""; let orderData = {}; 
-    
     const MENU = { 
-        'Appetizers': { 'Nachos': 180, 'Calamari': 220, 'Chicken Wings': 250, 'Fries': 120 },
-        'Alcoholic Beverages': { 'Beer': 120, 'Whiskey Shot': 250, 'Gin Tonic': 300, 'Red Wine': 350, 'Cocktail': 320 },
-        'Beverages': { 'Coke': 80, 'Water': 50, 'Iced Tea': 90, 'Orange Juice': 110 },
-        'Soups': { 'Mushroom Soup': 150, 'Pumpkin Soup': 150, 'Beef Stew': 280 },
-        'Salads': { 'Caesar Salad': 220, 'Greek Salad': 240 },
-        'Mains': { 'Cheese Burger': 280, 'Pepperoni Pizza': 480, 'Steak': 850, 'Pasta': 320 },
-        'Desserts': { 'Ice Cream': 150, 'Brownie': 180, 'Cheesecake': 200 }
+        'Appetizers': { 'Nachos': 180, 'Calamari': 220, 'Wings': 250 },
+        'Soups': { 'Mushroom': 150, 'Pumpkin': 150 },
+        'Salads': { 'Caesar': 220, 'Greek': 240 },
+        'Mains': { 'Burger': 280, 'Pizza': 480, 'Steak': 850 },
+        'Desserts': { 'Ice Cream': 150, 'Brownie': 180 },
+        'Alcoholic': { 'Beer': 120, 'Whiskey': 250, 'Gin': 300, 'Cocktail': 320 },
+        'Beverages': { 'Coke': 80, 'Water': 50, 'Iced Tea': 90 }
     };
+    const BAR_CATS = ['Alcoholic', 'Beverages'];
 
-    const BAR_CATEGORIES = ['Alcoholic Beverages', 'Beverages'];
-    const TABLE_COUNTS = { 'TABLE': 15, 'COUCH': 10, 'VIP': 2 };
-
-    // LIVE STATUS LISTENER
-    onValue(ref(db, 'orders'), (snapshot) => {
-        const data = snapshot.val();
-        if (!data || !currentTable) {
-            document.getElementById('kitStatus').innerText = "🍽️ KITCHEN: --";
-            document.getElementById('barStatus').innerText = "🍺 BAR: --";
-            return;
-        }
-        Object.values(data).forEach(order => {
-            if (order.table === currentTable) {
-                document.getElementById('kitStatus').innerText = order.kitchenDone ? "🍽️ KITCHEN: READY" : "🍽️ KITCHEN: PENDING";
-                document.getElementById('barStatus').innerText = order.barDone ? "🍺 BAR: READY" : "🍺 BAR: PENDING";
-                document.getElementById('kitStatus').style.color = order.kitchenDone ? "#2ecc71" : "#e67e22";
-                document.getElementById('barStatus').style.color = order.barDone ? "#2ecc71" : "#e67e22";
+    // STATUS MONITOR
+    onValue(ref(db, 'orders'), (snap) => {
+        const data = snap.val(); if (!data || !currentTable) return;
+        Object.values(data).forEach(o => {
+            if (o.table === currentTable) {
+                const k = document.getElementById('kitStatus'), b = document.getElementById('barStatus');
+                k.innerText = o.kitchenDone ? "🍽️ KITCHEN: READY" : "🍽️ KITCHEN: PENDING";
+                b.innerText = o.barDone ? "🍺 BAR: READY" : "🍺 BAR: PENDING";
+                k.style.color = o.kitchenDone ? "#27ae60" : "#e67e22"; b.style.color = o.barDone ? "#27ae60" : "#e67e22";
             }
         });
     });
 
     window.openPicker = (type) => {
-        document.getElementById('pickerTitle').innerText = `${type} NUMBER`;
-        const grid = document.getElementById('pickerGrid');
-        grid.innerHTML = '';
-        let color = type === 'COUCH' ? "var(--couch)" : (type === 'VIP' ? "var(--vip)" : "var(--table)");
-        for(let i=1; i <= TABLE_COUNTS[type]; i++) {
-            const name = `${type} ${i}`;
-            grid.innerHTML += `<button class="large-btn" style="border-color:${color}" onclick="pickTable('${name}')">${name}</button>`;
-        }
+        const grid = document.getElementById('pickerGrid'); grid.innerHTML = '';
+        const counts = { 'TABLE': 15, 'COUCH': 10, 'VIP': 2 };
+        for(let i=1; i <= counts[type]; i++) grid.innerHTML += `<button class="large-btn" onclick="pickTable('${type} ${i}')">${type} ${i}</button>`;
         document.getElementById('pickerOverlay').style.display = 'block';
     };
-
-    window.pickTable = (name) => {
-        currentTable = name;
-        document.getElementById('currentTableDisplay').innerText = name;
-        document.getElementById('currentTableDisplay').style.background = "#fff";
-        document.getElementById('currentTableDisplay').style.color = "#000";
-        closePicker();
-    };
-
-    window.closePicker = () => document.getElementById('pickerOverlay').style.display = 'none';
-
+    window.pickTable = (n) => { currentTable = n; document.getElementById('currentTableDisplay').innerText = n; closeOverlay('pickerOverlay'); };
     window.openMenu = (cat) => {
         document.getElementById('menuTitle').innerText = cat.toUpperCase();
-        document.getElementById('menuGrid').innerHTML = Object.keys(MENU[cat]).map(item => 
-            `<button class="large-btn" onclick="addItem('${item}')">${item}<br><small>₱${MENU[cat][item]}</small></button>`
-        ).join('');
+        document.getElementById('menuGrid').innerHTML = Object.keys(MENU[cat]).map(i => `<button class="large-btn" onclick="addItem('${i}')">${i}<br><small>₱${MENU[cat][i]}</small></button>`).join('');
         document.getElementById('menuOverlay').style.display = 'block';
     };
+    window.addItem = (i) => { orderData[i] = (orderData[i] || 0) + 1; updateUI(); };
+    window.closeOverlay = (id) => document.getElementById(id).style.display = 'none';
 
-    window.closeMenu = () => document.getElementById('menuOverlay').style.display = 'none';
-
-    window.addItem = (item) => { orderData[item] = (orderData[item] || 0) + 1; updateUI(); };
-
-    window.toggleNote = () => { 
-        const input = document.getElementById('orderNote'); 
-        input.style.display = input.style.display === 'block' ? 'none' : 'block'; 
-    };
-    
     function updateUI() {
-        const list = document.getElementById('orderList');
-        const totalDisp = document.getElementById('runningTotal');
         const keys = Object.keys(orderData);
-        let currentTotal = 0;
-        list.innerHTML = keys.length ? keys.map(k => {
-            let price = 0; for(let cat in MENU) { if(MENU[cat][k]) price = MENU[cat][k]; }
-            currentTotal += (price * orderData[k]);
-            return `<span class="pill">${orderData[k]}x ${k}</span>`;
-        }).join('') : '<em>NO ITEMS</em>';
-        if(keys.length > 0) { totalDisp.style.display = "block"; totalDisp.innerText = "TOTAL: ₱" + currentTotal; }
-        else { totalDisp.style.display = "none"; }
+        document.getElementById('orderList').innerHTML = keys.length ? keys.map(k => `<span class="pill">${orderData[k]}x ${k}</span>`).join('') : '<em>NO ITEMS</em>';
     }
 
-    window.resetOrder = () => { 
-        orderData = {}; currentTable = ""; 
-        document.getElementById('currentTableDisplay').innerText = "SELECT LOCATION";
-        document.getElementById('currentTableDisplay').style.background = "#000";
-        document.getElementById('currentTableDisplay').style.color = "#fff";
-        document.getElementById('orderNote').value = ""; document.getElementById('orderNote').style.display = "none"; 
-        updateUI(); 
-    };
-
-    window.submitOrder = () => {
-        if (!currentTable || Object.keys(orderData).length === 0) return alert("Select Location & Items");
-        let orderTotal = 0;
-        const details = Object.keys(orderData).map(k => {
-            let p = 0, catName = ""; 
-            for(let c in MENU) { if(MENU[c][k]) { p = MENU[c][k]; catName = c; } }
-            orderTotal += (p * orderData[k]);
-            return { name: k, qty: orderData[k], type: BAR_CATEGORIES.includes(catName) ? 'bar' : 'kitchen' };
+    // CONFIRMATION LOGIC
+    window.showConfirmation = () => {
+        if (!currentTable || Object.keys(orderData).length === 0) return alert("Select Table and Items first!");
+        const list = document.getElementById('confirmList'); list.innerHTML = '';
+        document.getElementById('confirmTable').innerText = "Location: " + currentTable;
+        
+        let kItems = [], bItems = [];
+        Object.keys(orderData).forEach(item => {
+            let cat = ""; for(let c in MENU) { if(MENU[c][item]) cat = c; }
+            const row = `<div>• ${orderData[item]}x ${item}</div>`;
+            BAR_CATS.includes(cat) ? bItems.push(row) : kItems.push(row);
         });
 
-        // Determine initial status based on what was ordered
-        const hasKitchen = details.some(d => d.type === 'kitchen');
-        const hasBar = details.some(d => d.type === 'bar');
+        if(kItems.length) list.innerHTML += `<div class="confirm-type">TO KITCHEN</div>` + kItems.join('');
+        if(bItems.length) list.innerHTML += `<div class="confirm-type">TO BAR</div>` + bItems.join('');
+        document.getElementById('confirmOverlay').style.display = 'flex';
+    };
+    window.closeConfirmation = () => document.getElementById('confirmOverlay').style.display = 'none';
+
+    window.submitOrder = () => {
+        let total = 0;
+        const details = Object.keys(orderData).map(k => {
+            let p = 0, cat = ""; for(let c in MENU) { if(MENU[c][k]) { p = MENU[c][k]; cat = c; } }
+            total += (p * orderData[k]);
+            return { name: k, qty: orderData[k], type: BAR_CATS.includes(cat) ? 'bar' : 'kitchen' };
+        });
+        const hasK = details.some(d => d.type === 'kitchen'), hasB = details.some(d => d.type === 'bar');
 
         push(ref(db, 'orders'), { 
             table: currentTable, 
             items: details.map(d => `${d.qty}x ${d.name}`),
-            details: details,
-            kitchenDone: !hasKitchen, // If no food, kitchen is "done" immediately
-            barDone: !hasBar,        // If no drinks, bar is "done" immediately
-            note: document.getElementById('orderNote').value || "", 
-            totalValue: orderTotal, 
-            timestamp: Date.now() 
-        }).then(() => { 
-            alert("Order Sent!"); 
-            resetOrder(); 
-        });
+            details, kitchenDone: !hasK, barDone: !hasB, 
+            totalValue: total, timestamp: Date.now() 
+        }).then(() => { resetOrder(); closeConfirmation(); });
     };
 
-    setInterval(() => { 
-        document.getElementById('clock').innerText = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); 
-    }, 1000);
+    window.resetOrder = () => { orderData = {}; currentTable = ""; document.getElementById('currentTableDisplay').innerText = "SELECT LOCATION"; updateUI(); };
+    setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); }, 1000);
 </script>
 </body>
 </html>
