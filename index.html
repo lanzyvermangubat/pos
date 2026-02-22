@@ -8,36 +8,85 @@
         :root { --bg: #000; --fg: #fff; --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         body { font-family: var(--font); background: var(--bg); color: var(--fg); margin: 0; padding: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
         header { display: flex; justify-content: space-between; align-items: center; background: #fff; color: #000; padding: 10px 20px; border-bottom: 4px solid #555; height: 60px; box-sizing: border-box; }
-        .filter-select { padding: 5px 10px; font-weight: bold; border: 2px solid #000; font-family: inherit; }
+        .station-badge { background: #000; color: #fff; padding: 5px 15px; font-weight: 900; text-transform: uppercase; border-radius: 4px; cursor: pointer; }
+        .recall-btn { background: #000; color: #fff; border: 2px solid #000; padding: 5px 15px; font-weight: 900; cursor: pointer; display: none; font-family: inherit;}
         .kds-scroll-area { flex-grow: 1; overflow-y: auto; padding: 10px; box-sizing: border-box; display: grid; grid-template-columns: repeat(2, 1fr); grid-auto-rows: calc(50% - 15px); gap: 15px; }
         .slot { border: 4px solid #fff; background: #000; display: flex; flex-direction: column; height: 100%; box-sizing: border-box; }
         .slot-head { background: #fff; color: #000; padding: 8px 15px; display: flex; justify-content: space-between; font-weight: 900; font-size: 1.5rem; }
         .slot-body { padding: 15px; flex-grow: 1; font-size: 1.6rem; font-weight: 600; overflow-y: auto; }
-        .slot-foot { background: #222; color: #fff; text-align: center; padding: 15px; cursor: pointer; font-size: 1.2rem; font-weight: bold; border-top: 2px solid #fff; }
+        .slot-foot { background: #222; color: #fff; text-align: center; padding: 20px; cursor: pointer; font-size: 1.4rem; font-weight: 900; border-top: 2px solid #fff; }
         .summary-bar { background: #111; border-top: 4px solid #fff; padding: 10px 20px; display: flex; gap: 20px; overflow-x: auto; height: 60px; align-items: center; }
-        .summary-item { background: #fff; color: #000; padding: 5px 12px; font-weight: 900; }
+        .summary-item { background: #fff; color: #000; padding: 5px 12px; font-weight: 900; border-radius: 4px; }
         .urgent .slot-head { background: #ff0000; color: #fff; animation: blinker 1s linear infinite; }
         @keyframes blinker { 50% { opacity: 0.3; } }
+        #setupOverlay { position: fixed; top:0; left:0; width:100%; height:100%; background: #000; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .setup-btn { width: 300px; padding: 30px; margin: 10px; font-size: 1.5rem; font-weight: 900; cursor: pointer; border: 4px solid #fff; background: #000; color: #fff; }
     </style>
 </head>
 <body>
+
+    <div id="setupOverlay">
+        <h1 style="color:#fff; margin-bottom: 30px;">SELECT STATION AREA</h1>
+        <button class="setup-btn" onclick="setArea('kitchen')">🍽️ KITCHEN</button>
+        <button class="setup-btn" onclick="setArea('bar')">🍺 BAR</button>
+        <button class="setup-btn" onclick="setArea('all')" style="border-style: dashed; opacity: 0.6;">SHOW ALL</button>
+    </div>
+
     <header>
-        <select id="viewFilter" class="filter-select" onchange="tick()">
-            <option value="all">SHOW ALL</option>
-            <option value="kitchen">KITCHEN ONLY</option>
-            <option value="bar">BAR ONLY</option>
-        </select>
-        <div id="clock">00:00:00</div>
+        <div class="station-badge" id="stationLabel">STATION: --</div>
+        <button class="recall-btn" id="recallBtn" onclick="window.recallLast()">↺ RECALL LAST</button>
+        <div id="clock" style="font-weight: 900; font-size: 1.2rem;">00:00:00</div>
     </header>
+
     <div class="kds-scroll-area" id="kdsGrid"></div>
-    <div class="summary-bar" id="summaryBar"><span style="color:#888; font-size:0.8rem;">TOTAL PREP:</span></div>
+
+    <div class="summary-bar" id="summaryBar">
+        <span style="color:#888; font-size:0.8rem;">TOTAL PREP:</span>
+    </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
     import { getDatabase, ref, onValue, remove, push, set, update } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
     
-    const firebaseConfig = { apiKey: "AIzaSyB1BND4Pd7vpd_8LJW1IwZB36-4uFdO6R4", authDomain: "pos-lovelyentclub.firebaseapp.com", databaseURL: "https://pos-lovelyentclub-default-rtdb.firebaseio.com", projectId: "pos-lovelyentclub", storageBucket: "pos-lovelyentclub.firebasestorage.app", messagingSenderId: "271664805776", appId: "1:271664805776:web:38b2482645209cd7f56515" };
-    const app = initializeApp(firebaseConfig); const db = getDatabase(app);
+    const firebaseConfig = { 
+        apiKey: "AIzaSyB1BND4Pd7vpd_8LJW1IwZB36-4uFdO6R4", 
+        authDomain: "pos-lovelyentclub.firebaseapp.com", 
+        databaseURL: "https://pos-lovelyentclub-default-rtdb.firebaseio.com", 
+        projectId: "pos-lovelyentclub", 
+        storageBucket: "pos-lovelyentclub.firebasestorage.app", 
+        messagingSenderId: "271664805776", 
+        appId: "1:271664805776:web:38b2482645209cd7f56515" 
+    };
+
+    const app = initializeApp(firebaseConfig); 
+    const db = getDatabase(app);
+    let currentArea = 'all';
+    let lastBumpedId = null;
+    let knownOrderIds = new Set();
+    let isInitialized = false;
+
+    // Audio Context for the alert beep
+    const playDing = () => {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // A5 note
+        gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5);
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.5);
+    };
+
+    window.setArea = (area) => {
+        currentArea = area;
+        document.getElementById('setupOverlay').style.display = 'none';
+        document.getElementById('stationLabel').innerText = `STATION: ${area}`;
+        // Brief sound to confirm audio is active
+        playDing();
+    };
 
     function tick() {
         const now = Date.now(); const totals = {};
@@ -45,71 +94,87 @@
             const timestamp = parseInt(slot.getAttribute('data-time'));
             const timerEl = slot.querySelector('.timer-display');
             const elapsed = Math.floor((now - timestamp) / 1000);
-            const mins = Math.floor(elapsed / 60);
-            const secs = (elapsed % 60).toString().padStart(2, '0');
-            if(timerEl) timerEl.innerText = `${mins}:${secs}`;
-            if (mins >= 3) slot.classList.add('urgent');
-            
-            const items = JSON.parse(slot.getAttribute('data-items'));
-            items.forEach(i => { const q = parseInt(i.split('x ')[0]) || 1; const n = i.split('x ')[1] || i; totals[n] = (totals[n] || 0) + q; });
+            if(timerEl) timerEl.innerText = `${Math.floor(elapsed / 60)}:${(elapsed % 60).toString().padStart(2, '0')}`;
+            if (elapsed >= 180) slot.classList.add('urgent');
+            JSON.parse(slot.getAttribute('data-items')).forEach(i => { 
+                const [qty, ...nameParts] = i.split('x ');
+                const n = nameParts.join('x ');
+                totals[n] = (totals[n] || 0) + (parseInt(qty) || 1); 
+            });
         });
-        document.getElementById('summaryBar').innerHTML = `<span style="color:#888; font-size:0.8rem;">TOTAL PREP:</span> ` + Object.keys(totals).map(n => `<span class="summary-item">${totals[n]} ${n}</span>`).join('');
+        document.getElementById('summaryBar').innerHTML = `<span style="color:#888; font-size:0.8rem;">TOTAL PREP:</span> ` + 
+            Object.keys(totals).map(n => `<span class="summary-item">${totals[n]} ${n}</span>`).join('');
     }
 
     onValue(ref(db, 'orders'), (snapshot) => {
+        const data = snapshot.val();
         const grid = document.getElementById('kdsGrid');
-        const filter = document.getElementById('viewFilter').value;
-        const data = snapshot.val(); 
-        grid.innerHTML = ''; 
-        if (!data) return;
+        grid.innerHTML = '';
+        if (!data) { 
+            knownOrderIds.clear(); 
+            isInitialized = true;
+            tick();
+            return; 
+        }
+
+        let hasNewRelevantOrder = false;
 
         Object.entries(data).forEach(([id, order]) => {
-            // Check if this specific station is already done
-            if (filter === 'kitchen' && order.kitchenDone) return;
-            if (filter === 'bar' && order.barDone) return;
+            // Check station relevance
+            const isKitchenRelevant = currentArea === 'kitchen' && !order.kitchenDone;
+            const isBarRelevant = currentArea === 'bar' && !order.barDone;
+            const isAllRelevant = currentArea === 'all' && (!order.kitchenDone || !order.barDone);
 
-            // Filter items for display based on type
-            const displayItems = (order.details || []).filter(item => filter === 'all' || item.type === filter);
-            if (displayItems.length === 0 && filter !== 'all') return;
-
-            const slot = document.createElement('div');
-            slot.className = `slot`;
-            slot.setAttribute('data-time', order.timestamp);
-            slot.setAttribute('data-items', JSON.stringify(displayItems.map(i => `${i.qty}x ${i.name}`)));
+            const areaItems = (order.details || []).filter(item => currentArea === 'all' || item.type === currentArea);
             
-            slot.innerHTML = `
-                <div class="slot-head"><span>${order.table}</span><span class="timer-display">0:00</span></div>
-                <div class="slot-body">
-                    ${displayItems.map(i => `<div>• ${i.qty}x ${i.name}</div>`).join('')}
-                    ${order.note ? `<span class="item-note">NOTE: ${order.note}</span>` : ''}
-                </div>
-                <div class="slot-foot" onclick='window.bump("${id}", "${filter}")'>CLEAR ${filter.toUpperCase()}</div>
-            `;
-            grid.appendChild(slot);
+            // Only show/play sound if there are items for THIS area
+            if (areaItems.length > 0 && (isKitchenRelevant || isBarRelevant || isAllRelevant)) {
+                if (isInitialized && !knownOrderIds.has(id)) {
+                    hasNewRelevantOrder = true;
+                }
+                knownOrderIds.add(id);
+
+                const slot = document.createElement('div');
+                slot.className = `slot`;
+                slot.setAttribute('data-time', order.timestamp);
+                slot.setAttribute('data-items', JSON.stringify(areaItems.map(i => `${i.qty}x ${i.name}`)));
+                slot.innerHTML = `
+                    <div class="slot-head"><span>${order.table}</span><span class="timer-display">0:00</span></div>
+                    <div class="slot-body">${areaItems.map(i => `<div>• ${i.qty}x ${i.name}</div>`).join('')}${order.note ? `<div style="color:#ffff00; font-size:1rem; border:1px dashed #ffff00; padding:5px; margin-top:5px;">NOTE: ${order.note}</div>` : ''}</div>
+                    <div class="slot-foot" onclick='window.bumpOrder("${id}")'>DONE</div>`;
+                grid.appendChild(slot);
+            }
         });
+
+        if (hasNewRelevantOrder) playDing();
+        isInitialized = true;
         tick();
     });
 
-    window.bump = (id, filter) => {
-        const orderRef = ref(db, `orders/${id}`);
+    window.bumpOrder = (id) => {
         const updates = {};
-        
-        if (filter === 'kitchen' || filter === 'all') updates.kitchenDone = true;
-        if (filter === 'bar' || filter === 'all') updates.barDone = true;
-
-        update(orderRef, updates).then(() => {
-            // If both are done, move to history/completed and delete from active
-            onValue(orderRef, (snap) => {
-                const order = snap.val();
-                if (order && order.kitchenDone && order.barDone) {
-                    const compRef = push(ref(db, 'completedOrders'));
-                    const histRef = push(ref(db, 'history'));
-                    const finalized = { ...order, completedAt: Date.now() };
-                    set(compRef, finalized);
-                    set(histRef, finalized).then(() => remove(orderRef));
+        if (currentArea === 'kitchen' || currentArea === 'all') updates.kitchenDone = true;
+        if (currentArea === 'bar' || currentArea === 'all') updates.barDone = true;
+        update(ref(db, `orders/${id}`), updates).then(() => {
+            lastBumpedId = id;
+            document.getElementById('recallBtn').style.display = 'block';
+            onValue(ref(db, `orders/${id}`), (snap) => {
+                const o = snap.val();
+                if (o && o.kitchenDone && o.barDone) {
+                    const fin = { ...o, completedAt: Date.now() };
+                    set(push(ref(db, 'completedOrders')), fin);
+                    set(push(ref(db, 'history')), fin).then(() => remove(ref(db, `orders/${id}`)));
                 }
             }, { onlyOnce: true });
         });
+    };
+
+    window.recallLast = () => {
+        if (!lastBumpedId) return;
+        const updates = {};
+        if (currentArea === 'kitchen' || currentArea === 'all') updates.kitchenDone = false;
+        if (currentArea === 'bar' || currentArea === 'all') updates.barDone = false;
+        update(ref(db, `orders/${lastBumpedId}`), updates).then(() => { lastBumpedId = null; document.getElementById('recallBtn').style.display = 'none'; });
     };
 
     setInterval(tick, 1000);
