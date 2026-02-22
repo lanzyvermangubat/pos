@@ -16,15 +16,15 @@
         .section-label { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; margin-bottom: 5px; opacity: 0.6; }
 
         /* Compact Location Selection */
-        .type-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 15px; flex-shrink: 0; }
+        .type-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 10px; flex-shrink: 0; }
         .type-btn { padding: 12px 5px; font-size: 0.75rem; border-width: 2px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
         .icon-dot { width: 12px; height: 12px; border-radius: 50%; border: 1px solid #000; }
         
-        .active-selection { background: #000; color: #fff; padding: 12px; margin-bottom: 15px; font-weight: 900; text-align: center; border: 1px solid #000; font-size: 0.9rem; letter-spacing: 1px; }
+        .active-selection { background: #000; color: #fff; padding: 12px; margin-bottom: 10px; font-weight: 900; text-align: center; border: 1px solid #000; font-size: 0.9rem; letter-spacing: 1px; }
 
-        /* Larger Menu Categories */
-        .cat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; flex-grow: 3; margin-bottom: 15px; }
-        .cat-btn { font-size: 1.4rem; border-width: 3px; }
+        /* Larger Menu Categories - Adjusted for 7 items */
+        .cat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; flex-grow: 3; margin-bottom: 15px; overflow-y: auto; }
+        .cat-btn { font-size: 1.1rem; border-width: 3px; padding: 15px 5px; }
 
         button { background: var(--bg); color: var(--fg); border: 2px solid var(--fg); font-family: inherit; font-weight: 800; cursor: pointer; transition: 0.1s; text-transform: uppercase; }
         button:active { background: var(--fg); color: var(--bg); }
@@ -62,10 +62,13 @@
 
         <div class="section-label">Menu Selection</div>
         <div class="cat-grid">
-            <button class="cat-btn" onclick="openMenu('Mains')" style="border-left: 8px solid #000;">MAINS</button>
-            <button class="cat-btn" onclick="openMenu('Sides')" style="border-left: 8px solid #444;">SIDES</button>
-            <button class="cat-btn" onclick="openMenu('Drinks')" style="border-left: 8px solid #888;">DRINKS</button>
-            <button class="cat-btn" onclick="openMenu('Dessert')" style="border-left: 8px solid #ccc;">DESSERT</button>
+            <button class="cat-btn" onclick="openMenu('Appetizers')" style="border-left: 8px solid #000;">Appetizers</button>
+            <button class="cat-btn" onclick="openMenu('Alcoholic Beverages')" style="border-left: 8px solid #444;">Alcoholic</button>
+            <button class="cat-btn" onclick="openMenu('Beverages')" style="border-left: 8px solid #888;">Beverages</button>
+            <button class="cat-btn" onclick="openMenu('Soups')" style="border-left: 8px solid #ccc;">Soups</button>
+            <button class="cat-btn" onclick="openMenu('Salads')" style="border-left: 8px solid #000;">Salads</button>
+            <button class="cat-btn" onclick="openMenu('Mains')" style="border-left: 8px solid #444;">Mains</button>
+            <button class="cat-btn" onclick="openMenu('Desserts')" style="border-left: 8px solid #888; grid-column: span 2;">Desserts</button>
         </div>
 
         <div class="summary-box">
@@ -119,10 +122,13 @@
     let orderData = {}; 
     
     const MENU = { 
-        'Mains': { 'Cheese Burger': 280, 'Chicken Burger': 260, 'Pepperoni Pizza': 480, 'Meat Lovers': 550 },
-        'Sides': { 'Fries': 150, 'Onion Rings': 160, 'Nuggets': 180, 'Salad': 160 },
-        'Drinks': { 'Coke': 80, 'Beer': 120, 'Water': 50, 'Iced Tea': 90, 'Whiskey Shot': 250 },
-        'Dessert': { 'Ice Cream': 150, 'Brownie': 180 }
+        'Appetizers': { 'Nachos': 180, 'Calamari': 220, 'Chicken Wings': 250, 'Fries': 120 },
+        'Alcoholic Beverages': { 'Beer': 120, 'Whiskey Shot': 250, 'Gin Tonic': 300, 'Red Wine': 350, 'Cocktail': 320 },
+        'Beverages': { 'Coke': 80, 'Water': 50, 'Iced Tea': 90, 'Orange Juice': 110 },
+        'Soups': { 'Mushroom Soup': 150, 'Pumpkin Soup': 150, 'Beef Stew': 280 },
+        'Salads': { 'Caesar Salad': 220, 'Greek Salad': 240 },
+        'Mains': { 'Cheese Burger': 280, 'Pepperoni Pizza': 480, 'Steak': 850, 'Pasta': 320 },
+        'Desserts': { 'Ice Cream': 150, 'Brownie': 180, 'Cheesecake': 200 }
     };
 
     const TABLE_COUNTS = { 'TABLE': 15, 'COUCH': 10, 'VIP': 2 };
@@ -131,11 +137,9 @@
         document.getElementById('pickerTitle').innerText = `${type} NUMBER`;
         const grid = document.getElementById('pickerGrid');
         grid.innerHTML = '';
-        
         let color = "var(--table)";
         if(type === 'COUCH') color = "var(--couch)";
         if(type === 'VIP') color = "var(--vip)";
-
         for(let i=1; i <= TABLE_COUNTS[type]; i++) {
             const name = `${type} ${i}`;
             grid.innerHTML += `<button class="large-btn" style="border-color:${color}" onclick="pickTable('${name}')">${name}</button>`;
@@ -179,14 +183,12 @@
         const totalDisp = document.getElementById('runningTotal');
         const keys = Object.keys(orderData);
         let currentTotal = 0;
-        
         list.innerHTML = keys.length ? keys.map(k => {
             let price = 0;
             for(let cat in MENU) { if(MENU[cat][k]) price = MENU[cat][k]; }
             currentTotal += (price * orderData[k]);
             return `<span class="pill">${orderData[k]}x ${k}</span>`;
         }).join('') : '<em>NO ITEMS</em>';
-        
         if(keys.length > 0) { totalDisp.style.display = "block"; totalDisp.innerText = "TOTAL: ₱" + currentTotal; }
         else { totalDisp.style.display = "none"; }
     }
