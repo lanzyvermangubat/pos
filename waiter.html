@@ -27,8 +27,10 @@
 
         /* Summary Area */
         .status-bar { background: #eee; padding: 8px; font-size: 0.7rem; font-weight: 800; display: flex; justify-content: space-around; border: 1px solid #000; margin-bottom: 8px; }
-        .summary-box { border: 2px solid var(--fg); background: var(--gray); padding: 10px; height: 10vh; margin-bottom: 10px; overflow-y: auto; flex-shrink: 0; }
+        .summary-box { border: 2px solid var(--fg); background: var(--gray); padding: 10px; height: 12vh; margin-bottom: 10px; overflow-y: auto; flex-shrink: 0; }
         .pill { border: 1px solid var(--fg); background: white; display: inline-block; padding: 5px 10px; margin: 2px; font-size: 0.8rem; font-weight: bold; }
+        
+        .total-strip { background: #000; color: #fff; padding: 8px 10px; font-weight: 900; font-size: 1rem; text-align: right; margin-bottom: 10px; }
 
         .footer { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; flex-shrink: 0; padding-bottom: 5px; }
         .send-btn { background: var(--fg); color: var(--bg); font-size: 1.2rem; padding: 18px; font-weight: 900; border: none; cursor: pointer; }
@@ -37,7 +39,7 @@
         .full-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg); z-index: 1000; padding: 20px; box-sizing: border-box; }
         .overlay-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--fg); padding-bottom: 15px; margin-bottom: 20px; }
         .scroll-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; height: calc(100% - 100px); overflow-y: auto; }
-        .large-btn { padding: 25px 10px; font-size: 1.1rem; font-weight: 800; border: 2px solid #000; background: #fff; }
+        .large-btn { padding: 25px 10px; font-size: 1.1rem; font-weight: 800; border: 2px solid #000; background: #fff; cursor: pointer; }
 
         /* Confirmation Modal */
         #confirmOverlay { background: rgba(0,0,0,0.85); color: #fff; display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000; flex-direction: column; align-items: center; justify-content: center; padding: 30px; box-sizing: border-box; }
@@ -85,10 +87,11 @@
         </div>
 
         <div class="summary-box" id="orderList"><em>NO ITEMS</em></div>
+        <div class="total-strip" id="billTotal">TOTAL: ₱0</div>
 
         <div class="footer">
             <button class="send-btn" onclick="showConfirmation()">SEND ORDER</button>
-            <button onclick="resetOrder()" style="font-weight:800; border:2px solid #000; background:#fff;">RESET</button>
+            <button onclick="resetOrder()" style="font-weight:800; border:2px solid #000; background:#fff; cursor:pointer;">RESET</button>
         </div>
     </div>
 
@@ -108,8 +111,8 @@
             <p id="confirmTable" style="font-weight:900; font-size:1.2rem; margin:15px 0;"></p>
             <div class="confirm-items" id="confirmList"></div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-top:20px;">
-                <button onclick="closeConfirmation()" style="padding:20px; font-weight:800; border:2px solid #000; background:#fff;">CANCEL</button>
-                <button onclick="submitOrder()" style="padding:20px; font-weight:900; background:#000; color:#fff; border:none;">SEND NOW</button>
+                <button onclick="closeConfirmation()" style="padding:20px; font-weight:800; border:2px solid #000; background:#fff; cursor:pointer;">CANCEL</button>
+                <button onclick="submitOrder()" style="padding:20px; font-weight:900; background:#000; color:#fff; border:none; cursor:pointer;">SEND NOW</button>
             </div>
         </div>
     </div>
@@ -132,7 +135,6 @@
     };
     const BAR_CATS = ['Alcoholic', 'Beverages'];
 
-    // STATUS MONITOR
     onValue(ref(db, 'orders'), (snap) => {
         const data = snap.val(); if (!data || !currentTable) return;
         Object.values(data).forEach(o => {
@@ -152,20 +154,35 @@
         document.getElementById('pickerOverlay').style.display = 'block';
     };
     window.pickTable = (n) => { currentTable = n; document.getElementById('currentTableDisplay').innerText = n; closeOverlay('pickerOverlay'); };
+    
     window.openMenu = (cat) => {
         document.getElementById('menuTitle').innerText = cat.toUpperCase();
         document.getElementById('menuGrid').innerHTML = Object.keys(MENU[cat]).map(i => `<button class="large-btn" onclick="addItem('${i}')">${i}<br><small>₱${MENU[cat][i]}</small></button>`).join('');
         document.getElementById('menuOverlay').style.display = 'block';
     };
-    window.addItem = (i) => { orderData[i] = (orderData[i] || 0) + 1; updateUI(); };
+
+    // MODIFIED: Item press now closes overlay immediately
+    window.addItem = (i) => { 
+        orderData[i] = (orderData[i] || 0) + 1; 
+        updateUI(); 
+        closeOverlay('menuOverlay'); // Goes back automatically
+    };
+
     window.closeOverlay = (id) => document.getElementById(id).style.display = 'none';
 
     function updateUI() {
         const keys = Object.keys(orderData);
-        document.getElementById('orderList').innerHTML = keys.length ? keys.map(k => `<span class="pill">${orderData[k]}x ${k}</span>`).join('') : '<em>NO ITEMS</em>';
+        let total = 0;
+        
+        document.getElementById('orderList').innerHTML = keys.length ? keys.map(k => {
+            let p = 0; for(let c in MENU) { if(MENU[c][k]) p = MENU[c][k]; }
+            total += (p * orderData[k]);
+            return `<span class="pill">${orderData[k]}x ${k}</span>`;
+        }).join('') : '<em>NO ITEMS</em>';
+        
+        document.getElementById('billTotal').innerText = `TOTAL: ₱${total.toLocaleString()}`;
     }
 
-    // CONFIRMATION LOGIC
     window.showConfirmation = () => {
         if (!currentTable || Object.keys(orderData).length === 0) return alert("Select Table and Items first!");
         const list = document.getElementById('confirmList'); list.innerHTML = '';
@@ -182,6 +199,7 @@
         if(bItems.length) list.innerHTML += `<div class="confirm-type">TO BAR</div>` + bItems.join('');
         document.getElementById('confirmOverlay').style.display = 'flex';
     };
+
     window.closeConfirmation = () => document.getElementById('confirmOverlay').style.display = 'none';
 
     window.submitOrder = () => {
